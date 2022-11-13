@@ -12,7 +12,6 @@ const confiq = {
     "ol",
     "fontsize",
     "hr",
-    "image",
   ],
 };
 
