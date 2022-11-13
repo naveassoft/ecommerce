@@ -1,37 +1,71 @@
 import Link from "next/link";
-import React, { useState } from "react";
+import { useRouter } from "next/router";
+import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { AiFillEyeInvisible } from "react-icons/ai";
 import { FaEye, FaUsers } from "react-icons/fa";
+import { PageInfo } from "../../../components/admin/common/common";
 import DashboardLayout from "../../../components/admin/common/DashboardLayout";
+import useStore from "../../../components/context/useStore";
 
 const EditVandor = () => {
   const [showPassword, setShowPassword] = useState(false);
   const { handleSubmit, register } = useForm();
+  const [loading, setLoading] = useState(false);
+  const [vandor, setVandor] = useState(null);
+  const store = useStore();
+  const router = useRouter();
 
-  function onsubmit(data) {
-    console.log(data);
+  useEffect(() => {
+    if (router.query.id) {
+      (async function () {
+        const { data, error } = await store?.fetchData(
+          `/api/vandor?id=${router.query.id}`
+        );
+        if (data) setVandor(data[0]);
+        else {
+          store?.setAlert({ msg: error, type: "error" });
+          router.push("/admin/home/vandor");
+        }
+      })();
+    }
+  }, [router.query.id]);
+
+  async function onsubmit(data) {
+    if (!vandor) return;
+
+    setLoading(true);
+    const formData = new FormData();
+    Object.entries(data).forEach(([key, value]) => {
+      if (value) formData.append(key, value);
+    });
+
+    //save data;
+    const { error, message } = await store?.addOrEditData(
+      `/api/vandor?id=${vandor.id}`,
+      formData,
+      "PUT"
+    );
+    if (!error) {
+      store?.setAlert({ msg: message, type: "success" });
+    } else {
+      store?.setAlert({ msg: message, type: "error" });
+    }
+    setLoading(false);
   }
 
   return (
     <DashboardLayout>
       <section>
-        <div className="page-info">
-          <div className="icon">
-            <FaUsers />
-          </div>
-          <div>
-            <h3>Edit Vandor Information</h3>
-            <p>Edit Vandor Information from here</p>
-          </div>
-        </div>
+        <PageInfo title="Vendor" type="Edit" icon={<FaUsers />} />
+
         <div className="add-form">
           <form onSubmit={handleSubmit(onsubmit)}>
             <div>
               <label>Vandor Name </label>
               <input
-                {...register("name", { required: true })}
-                required
+                {...register("name")}
+                defaultValue={vandor?.name}
                 type="text"
                 placeholder="Vandor Name"
               />
@@ -39,54 +73,44 @@ const EditVandor = () => {
             <div>
               <label>Vandor Email </label>
               <input
-                {...register("email", { required: true })}
-                required
+                {...register("email")}
                 type="email"
+                defaultValue={vandor?.email}
+                readOnly
                 placeholder="Vandor Email"
               />
             </div>
             <div>
               <label>Shop Name</label>
               <input
-                {...register("shop_name", { required: true })}
-                required
+                {...register("shop_name")}
                 type="text"
+                defaultValue={vandor?.shop_name}
                 placeholder="Shop Name"
               />
             </div>
             <div>
               <label>Trad Liecence</label>
               <input
-                {...register("trad_liecence", { required: true })}
-                required
+                {...register("trad_liecence")}
                 type="text"
+                defaultValue={vandor?.trad_liecence}
                 placeholder="Trad Liecence"
               />
             </div>
             <div>
               <label>Shop Location</label>
               <input
-                {...register("shop_location", { required: true })}
-                required
+                {...register("shop_location")}
                 type="text"
+                defaultValue={vandor?.shop_location}
                 placeholder="Shop Location"
-              />
-            </div>
-            <div>
-              <label style={{ marginLeft: 0, marginBottom: 0 }}>
-                Shop Logo{" "}
-              </label>
-              <input
-                {...register("shop_logo", { required: true })}
-                required
-                type="file"
               />
             </div>
             <div className="relative">
               <label>Password</label>
               <input
-                {...register("password", { required: true })}
-                required
+                {...register("password")}
                 type={showPassword ? "text" : "password"}
                 placeholder="Password"
               />
@@ -97,19 +121,10 @@ const EditVandor = () => {
                 {showPassword ? <AiFillEyeInvisible /> : <FaEye />}
               </button>
             </div>
-            <div>
-              <label>Confirm Password</label>
-              <input
-                {...register("confirm_password", { required: true })}
-                required
-                type="password"
-                placeholder="Confirm Password"
-              />
-            </div>
 
             <div className="flex justify-between">
               <button type="submit" className="btn active text-sm">
-                CREATE
+                UPDATE
               </button>
               <Link href="/admin/vandor">
                 <button
@@ -117,15 +132,12 @@ const EditVandor = () => {
                   className="btn text-sm"
                   style={{ backgroundColor: "#dc3545", color: "#fff" }}
                 >
-                  CANCEL
+                  GO BACK
                 </button>
               </Link>
             </div>
           </form>
         </div>
-        <p className="my-7 text-gray-400 text-sm">
-          Copyright © 2022 All Rights Reserved.
-        </p>
       </section>
     </DashboardLayout>
   );

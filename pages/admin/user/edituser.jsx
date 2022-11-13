@@ -25,7 +25,7 @@ const EditUser = () => {
         if (data) setUser(data[0]);
         else {
           store?.setAlert({ msg: error, type: "error" });
-          router.push("/admin/home/user");
+          router.push("/admin/user");
         }
       })();
     }
@@ -48,7 +48,6 @@ const EditUser = () => {
     );
     if (!error) {
       store?.setAlert({ msg: message, type: "success" });
-      setUpdate((prev) => !prev);
     } else {
       store?.setAlert({ msg: message, type: "error" });
     }

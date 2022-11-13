@@ -2,19 +2,21 @@ import DashboardLayout from "../../../components/admin/common/DashboardLayout";
 import useStore from "../../../components/context/useStore";
 import { HiMinusCircle, HiPlusCircle } from "react-icons/hi";
 import { FaUsers } from "react-icons/fa";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   DocumentHandler,
   MainPagesFooterPart,
   MainPagesTopPart,
+  NoDataFount,
   PageInfo,
 } from "../../../components/admin/common/common";
 
 const Vandor = () => {
   const [showAction, setShowAction] = useState(-1);
   const [loading, setLoading] = useState(false);
+  const [update, setUpdate] = useState(false);
   const [filtered, setfiltered] = useState("");
-  const [user, setUser] = useState(null);
+  const [vandor, setVandor] = useState(null);
   const [limit, setLimit] = useState(5);
   const [count, setCount] = useState(0);
   const [page, setPage] = useState(0);
@@ -26,32 +28,39 @@ const Vandor = () => {
       else return i;
     });
   }
-  const data = [
-    {
-      sn: 1,
-      type: "Vador",
-      name: "Md Kader",
-      email: "kader@gmail.com",
-    },
-    {
-      sn: 2,
-      type: "Vador",
-      name: "Md Kader",
-      email: "kader@gmail.com",
-    },
-    {
-      sn: 3,
-      type: "Vador",
-      name: "Md Kader",
-      email: "kader@gmail.com",
-    },
-    {
-      sn: 4,
-      type: "Vador",
-      name: "Md Kader",
-      email: "kader@gmail.com",
-    },
-  ];
+
+  //get vandor ;
+  useEffect(() => {
+    (async function () {
+      const { data, error } = await store?.fetchData(
+        `/api/vandor?home=true&limit=${limit}&skip=${page}`
+      );
+      if (data) {
+        setVandor(data.data);
+        setCount(data.count);
+      } else {
+        store?.setAlert({ msg: error, type: "error" });
+      }
+    })();
+  }, [update, limit, page]); //till
+
+  //delete vandor;
+  async function deleteVandor(id, image) {
+    const confirm = window.confirm("Are you sure to delete the user?");
+    if (confirm) {
+      setLoading(true);
+      const { error, message } = await store?.deleteData(
+        `/api/vandor?id=${id}&image=${image}`
+      );
+      if (!error) {
+        store?.setAlert({ msg: message, type: "success" });
+        setUpdate((prev) => !prev);
+      } else {
+        store?.setAlert({ msg: message, type: "error" });
+      }
+      setLoading(false);
+    }
+  } //till;
 
   return (
     <DashboardLayout>
@@ -70,36 +79,58 @@ const Vandor = () => {
                 <th>ID</th>
                 <th>NAME</th>
                 <th>EMAIL</th>
-                <th>TYPE</th>
+                <th>SHOP NAME</th>
+                <th>SHOP LOGO</th>
               </tr>
             </thead>
             <tbody>
-              {data.map((item, i) => (
-                <React.Fragment key={i}>
-                  <tr>
-                    <td
-                      className={`sn-item ${
-                        i % 2 === 0 ? "bg-[#f1f1f1]" : "bg-[#f9f9f9]"
-                      }`}
-                      onClick={() => handleAction(i)}
-                    >
-                      {showAction !== i ? <HiPlusCircle /> : <HiMinusCircle />}
-                      <span>{item.sn}</span>
-                    </td>
-                    <td>{item.name}</td>
-                    <td>{item.email}</td>
-                    <td>{item.type}</td>
-                  </tr>
-                  {showAction === i && (
-                    <DocumentHandler
-                      colSpan={4}
-                      editpage={`/admin/vandor/editvandor?id=2`}
-                      deleteHandler={() => console.log("click")}
-                      loading={loading}
-                    />
-                  )}
-                </React.Fragment>
-              ))}
+              {vandor && vandor.length ? (
+                vandor.map((item, i) => (
+                  <React.Fragment key={i}>
+                    <tr>
+                      <td
+                        className={`sn-item ${
+                          i % 2 === 0 ? "bg-[#f1f1f1]" : "bg-[#f9f9f9]"
+                        }`}
+                        onClick={() => handleAction(i)}
+                      >
+                        {showAction !== i ? (
+                          <HiPlusCircle />
+                        ) : (
+                          <HiMinusCircle />
+                        )}
+                        <span>{item.id}</span>
+                      </td>
+                      <td>{item.name}</td>
+                      <td>{item.email}</td>
+                      <td>{item.shop_name}</td>
+                      <td>
+                        {item.shop_logo ? (
+                          <img
+                            className="h-5 object-contain"
+                            src={`/assets/${item.shop_logo}`}
+                            alt=""
+                          />
+                        ) : (
+                          <span>No Image</span>
+                        )}
+                      </td>
+                    </tr>
+                    {showAction === i && (
+                      <DocumentHandler
+                        colSpan={5}
+                        editpage={`/admin/vandor/editvandor?id=${item.id}`}
+                        deleteHandler={() =>
+                          deleteVandor(item.id, item.shop_logo)
+                        }
+                        loading={loading}
+                      />
+                    )}
+                  </React.Fragment>
+                ))
+              ) : (
+                <NoDataFount colSpan={5} />
+              )}
             </tbody>
           </table>
           <MainPagesFooterPart
@@ -107,7 +138,7 @@ const Vandor = () => {
             limit={limit}
             page={page}
             setPage={setPage}
-            showingData={0}
+            showingData={vandor?.length || 0}
           />
         </div>
       </div>

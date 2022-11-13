@@ -127,6 +127,7 @@ const DUser = () => {
                       <td>{item.name}</td>
                       <td>{item.email}</td>
                       <td>{item.user_role}</td>
+                      <td>{item.user_role}</td>
                     </tr>
                     {showAction === i && (
                       <DocumentHandler

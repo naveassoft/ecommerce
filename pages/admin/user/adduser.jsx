@@ -14,12 +14,7 @@ const AddUser = () => {
   const store = useStore(null);
 
   async function onsubmit(data) {
-    if (data.password.length < 6) {
-      return store?.setAlert({
-        msg: "Give at least 6 charecters for password",
-        type: "info",
-      });
-    } else if (data.password !== data.confirm_password) {
+    if (data.password !== data.confirm_password) {
       return store?.setAlert({
         msg: "Please Check your password carefully",
         type: "info",
@@ -79,6 +74,7 @@ const AddUser = () => {
               <input
                 {...register("password", { required: true })}
                 required
+                minLength={6}
                 type={showPassword ? "text" : "password"}
                 placeholder="Password"
               />
@@ -95,6 +91,7 @@ const AddUser = () => {
               <input
                 {...register("confirm_password", { required: true })}
                 required
+                minLength={6}
                 type="password"
                 placeholder="Confirm Password"
               />

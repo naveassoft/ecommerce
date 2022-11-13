@@ -50,15 +50,8 @@ const Products = () => {
   return (
     <DashboardLayout>
       <div className="dashboard-home-container">
-        <div className="page-info">
-          <div className="icon">
-            <RiProductHuntFill />
-          </div>
-          <div>
-            <h3>Product Information</h3>
-            <p>View Product Information from here</p>
-          </div>
-        </div>
+        <PageInfo title="Product" type="View" icon={<RiProductHuntFill />} />
+
         <div className="container">
           <div className="flex justify-end mb-3">
             <Link href="/admin/product/addproduct">

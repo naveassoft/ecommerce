@@ -17,7 +17,7 @@ export function mySql() {
 export function getDateFromDB(res, query, count = undefined) {
   return mySql().query(query, (err, data) => {
     mySql().end();
-    if (err) throw err;
+    if (err) return errorHandler(res, { message: err.sqlMessage });
     if (count) {
       mySql().query(count, (err, totalDocument) => {
         mySql().end();

@@ -7,24 +7,21 @@ import {
   mySql,
 } from "./common";
 
-export function getUser(req, res) {
+export function getVandor(req, res) {
   try {
     if (req.query.id) {
       //send single category;
-      const sql = `SELECT * FROM user WHERE id=${req.query.id}`;
+      const sql = `SELECT * FROM vandor WHERE id=${req.query.id}`;
       getDateFromDB(res, sql);
     } else if (req.query.home) {
       // send category for home category page;
       const page = parseInt(req.query.skip || 0) * req.query.limit;
-      const sql = `SELECT * FROM user LIMIT ${page}, ${req.query.limit}`;
-      const count = "SELECT COUNT(id) FROM user";
+      const sql = `SELECT * FROM vandor LIMIT ${page}, ${req.query.limit}`;
+      const count = "SELECT COUNT(id) FROM vandor";
       getDateFromDB(res, sql, count);
-    } else if (req.query.filter) {
-      const sql = `SELECT * FROM user WHERE user_role = '${req.query.filter}'`;
-      getDateFromDB(res, sql);
     } else {
       //send all category
-      const sql = "SELECT * FROM user";
+      const sql = "SELECT * FROM vandor";
       getDateFromDB(res, sql);
     }
   } catch (error) {
@@ -32,16 +29,16 @@ export function getUser(req, res) {
   }
 }
 
-export async function postUser(req, res) {
+export async function postVandor(req, res) {
   try {
-    const img = [{ name: "profile", maxCount: 1 }];
+    const img = [{ name: "shop_logo", maxCount: 1 }];
     const { error } = await bodyParser(req, res, "assets", img);
     if (error) {
       throw { message: error.message || "Error occured when image updlading" };
     }
 
     //check is user exist;
-    const query = `SELECT * FROM user WHERE email='${req.body.email}'`;
+    const query = `SELECT * FROM vandor WHERE email='${req.body.email}'`;
     mySql().query(query, async (err, result) => {
       mySql().end();
       if (err) {
@@ -49,8 +46,8 @@ export async function postUser(req, res) {
       } else {
         if (result.length) {
           //there is an user exist;
-          if (req.files.profile) {
-            deleteImage(req.files.profile[0].filename);
+          if (req.files.shop_logo) {
+            deleteImage(req.files.shop_logo[0].filename);
           }
           return res.status(401).send({ message: "User already exist" });
         } else {
@@ -58,18 +55,18 @@ export async function postUser(req, res) {
           //hase password;
           const hashed = await bcrypt.hash(req.body.password, 10);
           req.body.password = hashed;
-          if (req.files.profile) {
-            req.body.profile = req.files.profile[0].filename;
-          } else delete req.body.profile;
+          if (req.files.shop_logo) {
+            req.body.shop_logo = req.files.shop_logo[0].filename;
+          } else delete req.body.shop_logo;
 
           //save to db;
-          const sql = "INSERT INTO user SET ?";
+          const sql = "INSERT INTO vandor SET ?";
           mySql().query(sql, req.body, (err, result) => {
             mySql().end();
             if (err) return errorHandler(res, { message: err.sqlMessage });
             else {
               if (result.insertId > 0) {
-                res.send({ message: "User Added Successfully" });
+                res.send({ message: "Vandor Added Successfully" });
               } else {
                 res.send({ message: "Unable to Added, please try again" });
               }
@@ -83,13 +80,13 @@ export async function postUser(req, res) {
   }
 }
 
-export function deleteUser(req, res) {
+export function deleteVandor(req, res) {
   try {
-    const sql = `DELETE FROM user WHERE id=${req.query.id}`;
+    const sql = `DELETE FROM vandor WHERE id=${req.query.id}`;
     mySql().query(sql, (err) => {
       mySql().end();
       if (err) return errorHandler(res, { message: err.sqlMessage });
-      if (req.query.image) {
+      if (req.query.shop_logo) {
         deleteImage(req.query.image);
       }
       res.send({ message: "Deleted successfully" });
@@ -99,9 +96,9 @@ export function deleteUser(req, res) {
   }
 }
 
-export async function updateUser(req, res) {
+export async function updateVandor(req, res) {
   try {
-    const img = [{ name: "profile", maxCount: 1 }];
+    const img = [{ name: "shop_logo", maxCount: 1 }];
     const { error } = await bodyParser(req, res, "assets", img);
     if (error) throw { message: "Error occured when image updlading" };
 
@@ -117,13 +114,13 @@ export async function updateUser(req, res) {
       } else data += `${key} = '${value}'`;
     });
 
-    const sql = `UPDATE user SET ${data} WHERE id=${req.query.id}`;
+    const sql = `UPDATE vandor SET ${data} WHERE id=${req.query.id}`;
     mySql().query(sql, (err, result) => {
       mySql().end();
       if (err) return errorHandler(res, { message: err.sqlMessage });
       else {
         if (result.changedRows > 0) {
-          res.send({ message: "User Updated Successfully" });
+          res.send({ message: "Vandor Updated Successfully" });
         } else {
           res.send({ message: "Unable to Update, please try again" });
         }
