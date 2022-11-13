@@ -18,7 +18,7 @@ export function PageInfo({ title, type, icon }) {
   );
 }
 
-export function MainPagesTopPart({ setLimit, addLink }) {
+export function MainPagesTopPart({ setLimit, addLink, setFilter, filterOpt }) {
   return (
     <>
       <div className="flex justify-end mb-3">
@@ -41,7 +41,17 @@ export function MainPagesTopPart({ setLimit, addLink }) {
           <p>items/page</p>
         </div>
         <div>
-          <input type="text" placeholder="Search" />
+          {setFilter && filterOpt ? (
+            <select onChange={(e) => setFilter(e.target.value)}>
+              {filterOpt.map((item, i) => (
+                <option key={i} value={item.value}>
+                  {item.txt}
+                </option>
+              ))}
+            </select>
+          ) : (
+            <input type="text" placeholder="Search" />
+          )}
         </div>
       </div>
     </>

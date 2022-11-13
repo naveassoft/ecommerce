@@ -1,15 +1,15 @@
-import Link from "next/link";
-import React, { useState } from "react";
-import { useForm } from "react-hook-form";
+import DashboardLayout from "../../../components/admin/common/DashboardLayout";
+import { PageInfo } from "../../../components/admin/common/common";
+import useStore from "../../../components/context/useStore";
 import { AiFillEyeInvisible } from "react-icons/ai";
 import { FaEye, FaUser } from "react-icons/fa";
-import { PageInfo } from "../../../components/admin/common/common";
-import DashboardLayout from "../../../components/admin/common/DashboardLayout";
-import useStore from "../../../components/context/useStore";
+import { useForm } from "react-hook-form";
+import React, { useState } from "react";
+import Link from "next/link";
 
 const AddUser = () => {
   const [showPassword, setShowPassword] = useState(false);
-  const { handleSubmit, register } = useForm();
+  const { handleSubmit, register, reset } = useForm();
   const [loading, setLoading] = useState(false);
   const store = useStore(null);
 
@@ -25,11 +25,15 @@ const AddUser = () => {
         type: "info",
       });
     } else delete data.confirm_password;
+
     setLoading(true);
+
+    if (data.profile) data.profile = data.profile[0];
     const formData = new FormData();
     Object.entries(data).forEach(([key, value]) => {
       if (value) formData.append(key, value);
     });
+
     //save data;
     const { error, message } = await store?.addOrEditData(
       "/api/user",
@@ -37,6 +41,7 @@ const AddUser = () => {
       "POST"
     );
     if (!error) {
+      reset();
       store?.setAlert({ msg: message, type: "success" });
     } else {
       store?.setAlert({ msg: message, type: "error" });
@@ -95,6 +100,19 @@ const AddUser = () => {
               />
             </div>
             <div>
+              <label>User Role</label>
+              <select
+                className="w-full"
+                defaultValue="customer"
+                {...register("user_role")}
+              >
+                <option value="customer">Customer</option>
+                <option value="staff">Sales Staff</option>
+                <option value="owner">Owner</option>
+                <option value="administrator">Store Administrator</option>
+              </select>
+            </div>
+            <div>
               <label style={{ marginLeft: 0, marginBottom: 0 }}>
                 User profile
               </label>
@@ -102,7 +120,11 @@ const AddUser = () => {
             </div>
 
             <div className="flex justify-between">
-              <button type="submit" className="btn active text-sm">
+              <button
+                disabled={loading}
+                type="submit"
+                className="btn active text-sm"
+              >
                 SAVE
               </button>
               <Link href="/admin/user">

@@ -1,13 +1,25 @@
-import { menuAnimation } from "../../../components/admin/components/SidebarMenu";
-import { HiMinusCircle, HiPlusCircle } from "react-icons/hi";
-import { AnimatePresence, motion } from "framer-motion";
-import { FaEdit, FaTrash, FaUsers } from "react-icons/fa";
-import React, { useState } from "react";
 import DashboardLayout from "../../../components/admin/common/DashboardLayout";
-import Link from "next/link";
+import useStore from "../../../components/context/useStore";
+import { HiMinusCircle, HiPlusCircle } from "react-icons/hi";
+import { FaUsers } from "react-icons/fa";
+import React, { useState } from "react";
+import {
+  DocumentHandler,
+  MainPagesFooterPart,
+  MainPagesTopPart,
+  PageInfo,
+} from "../../../components/admin/common/common";
 
 const Vandor = () => {
   const [showAction, setShowAction] = useState(-1);
+  const [loading, setLoading] = useState(false);
+  const [filtered, setfiltered] = useState("");
+  const [user, setUser] = useState(null);
+  const [limit, setLimit] = useState(5);
+  const [count, setCount] = useState(0);
+  const [page, setPage] = useState(0);
+  const store = useStore();
+
   function handleAction(i) {
     setShowAction((prev) => {
       if (prev === i) return -1;
@@ -44,42 +56,18 @@ const Vandor = () => {
   return (
     <DashboardLayout>
       <div className="dashboard-home-container">
-        <div className="page-info">
-          <div className="icon">
-            <FaUsers />
-          </div>
-          <div>
-            <h3>Vendor Information</h3>
-            <p>View Vendor Information from here</p>
-          </div>
-        </div>
+        <PageInfo title="Vendor" type="View" icon={<FaUsers />} />
+
         <div className="container">
-          <div className="flex justify-end mb-3">
-            <Link href="/admin/vandor/addvandor">
-              <button className="red-btn">
-                <span>New</span> <HiPlusCircle />
-              </button>
-            </Link>
-          </div>
-          <div className="flex justify-between mb-3">
-            <div className="flex gap-3 items-center">
-              <select>
-                <option value="10">10</option>
-                <option value="10">25</option>
-                <option value="10">50</option>
-                <option value="10">100</option>
-              </select>
-              <p>items/page</p>
-            </div>
-            <div>
-              <input type="text" placeholder="Search" />
-            </div>
-          </div>
+          <MainPagesTopPart
+            addLink="/admin/vandor/addvandor"
+            setLimit={setLimit}
+          />
 
           <table>
             <thead>
               <tr>
-                <th>SN</th>
+                <th>ID</th>
                 <th>NAME</th>
                 <th>EMAIL</th>
                 <th>TYPE</th>
@@ -103,46 +91,25 @@ const Vandor = () => {
                     <td>{item.type}</td>
                   </tr>
                   {showAction === i && (
-                    <tr>
-                      <td colSpan={4}>
-                        <AnimatePresence>
-                          <motion.div
-                            variants={menuAnimation}
-                            initial="hidden"
-                            animate="show"
-                            exit="hidden"
-                            className="flex gap-5 items-center border-x"
-                          >
-                            <p className="font-bold text-gray-600">Action</p>
-                            <div className="flex gap-2">
-                              <Link href="/admin/vandor/editvandor">
-                                <FaEdit className="text-orange-400" />
-                              </Link>
-                              <FaTrash className="text-red-500" />
-                            </div>
-                          </motion.div>
-                        </AnimatePresence>
-                      </td>
-                    </tr>
+                    <DocumentHandler
+                      colSpan={4}
+                      editpage={`/admin/vandor/editvandor?id=2`}
+                      deleteHandler={() => console.log("click")}
+                      loading={loading}
+                    />
                   )}
                 </React.Fragment>
               ))}
             </tbody>
           </table>
-          <div className="flex justify-between mt-6">
-            <p className="text-sm">Showing 1 to 10 of 12 entries</p>
-            <div className="flex gap-1">
-              <button disabled className="btn">
-                Previous
-              </button>
-              <button className="btn active">1</button>
-              <button className="btn">Next</button>
-            </div>
-          </div>
+          <MainPagesFooterPart
+            count={count}
+            limit={limit}
+            page={page}
+            setPage={setPage}
+            showingData={0}
+          />
         </div>
-        <p className="my-7 text-gray-400 text-sm">
-          Copyright © 2022 All Rights Reserved.
-        </p>
       </div>
     </DashboardLayout>
   );
