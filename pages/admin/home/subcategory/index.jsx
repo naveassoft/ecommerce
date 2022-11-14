@@ -34,7 +34,7 @@ const DSubCategory = () => {
   useEffect(() => {
     (async function () {
       const { data, error } = await store?.fetchData(
-        `/api/subcategory?home=true&limit=${limit}&skip=${page}`
+        `/api/subcategory?home=true&limit=${limit}&page=${page}`
       );
       if (data) {
         setsubCategory(data.data);

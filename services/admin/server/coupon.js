@@ -8,7 +8,7 @@ export function getCoupon(req, res) {
       getDateFromDB(res, sql);
     } else if (req.query.home) {
       // send category for home category page;
-      const page = parseInt(req.query.skip || 0) * req.query.limit;
+      const page = parseInt(req.query.page || 0) * req.query.limit;
       const sql = `SELECT * FROM coupon LIMIT ${page}, ${req.query.limit}`;
       const count = "SELECT COUNT(id) FROM coupon";
       getDateFromDB(res, sql, count);
@@ -25,8 +25,7 @@ export function getCoupon(req, res) {
 export async function postCoupon(req, res) {
   try {
     const sql = "INSERT INTO coupon SET ?";
-    mySql().query(sql, req.body, (err, result) => {
-      mySql().end();
+    mySql.query(sql, req.body, (err, result) => {
       if (err) throw err;
       else {
         if (result.insertId > 0) {
@@ -44,8 +43,7 @@ export async function postCoupon(req, res) {
 export function deleteCoupon(req, res) {
   try {
     const sql = `DELETE FROM coupon WHERE id=${req.query.id}`;
-    mySql().query(sql, (err) => {
-      mySql().end();
+    mySql.query(sql, (err) => {
       if (err) throw err;
       res.send({ message: "Deleted successfully" });
     });
@@ -64,8 +62,7 @@ export async function updateCoupon(req, res) {
     });
 
     const sql = `UPDATE coupon SET ${data} WHERE id=${req.query.id}`;
-    mySql().query(sql, (err, result) => {
-      mySql().end();
+    mySql.query(sql, (err, result) => {
       if (err) throw err;
       else {
         if (result.changedRows > 0) {

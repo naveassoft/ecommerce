@@ -35,7 +35,7 @@ const DBanner = () => {
     (async function () {
       if (store) {
         const { data, error } = await store?.fetchData(
-          `/api/banner?home=true&limit=${limit}&skip=${page}`
+          `/api/banner?home=true&limit=${limit}&page=${page}`
         );
         if (data) {
           setBanner(data.data);

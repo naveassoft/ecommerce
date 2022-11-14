@@ -30,8 +30,7 @@ export async function updateLinks(req, res) {
 
     document.forEach((item) => {
       const sql = `UPDATE important_links SET info = "${item.info}" WHERE name = "${item.name}"`;
-      mySql().query(sql, (err) => {
-        mySql().end();
+      mySql.query(sql, (err) => {
         if (err) {
           return res.status(500).send({ message: "There was an error" });
         }

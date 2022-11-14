@@ -1,6 +1,5 @@
 import Link from "next/link";
 import React, { useEffect, useRef, useState } from "react";
-import { FaHome } from "react-icons/fa";
 import DashboardLayout from "../../../../components/admin/common/DashboardLayout";
 import dynamic from "next/dynamic";
 import useStore from "../../../../components/context/useStore";

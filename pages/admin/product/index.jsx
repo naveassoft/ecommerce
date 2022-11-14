@@ -2,11 +2,12 @@ import DashboardLayout from "../../../components/admin/common/DashboardLayout";
 import { HiMinusCircle, HiPlusCircle } from "react-icons/hi";
 import useStore from "../../../components/context/useStore";
 import { RiProductHuntFill } from "react-icons/ri";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   DocumentHandler,
   MainPagesFooterPart,
   MainPagesTopPart,
+  NoDataFount,
   PageInfo,
 } from "../../../components/admin/common/common";
 
@@ -26,36 +27,39 @@ const Products = () => {
       else return i;
     });
   }
-  const data = [
-    {
-      sn: 1,
-      name: "Baby Walker",
-      image: "/assets/product.jpg",
-      price: 2000,
-      stock: 5,
-    },
-    {
-      sn: 2,
-      name: "Baby Walker",
-      image: "/assets/product.jpg",
-      price: 2000,
-      stock: 5,
-    },
-    {
-      sn: 3,
-      name: "Baby Walker",
-      image: "/assets/product.jpg",
-      price: 2000,
-      stock: 5,
-    },
-    {
-      sn: 4,
-      name: "Baby Walker",
-      image: "/assets/product.jpg",
-      price: 2000,
-      stock: 5,
-    },
-  ];
+
+  useEffect(() => {
+    (async function () {
+      if (store) {
+        const { data, error } = await store?.fetchData(
+          `/api/product?limit=${limit}&page=${page}`
+        );
+        if (data) {
+          setProducts(data.data);
+          setCount(data.count);
+        } else store?.setAlert({ msg: error, type: "error" });
+      }
+    })();
+  }, [update, limit, page]);
+
+  async function deleteProduct(id, image, features_img) {
+    const confirm = window.confirm("Are you sure to delete?");
+    if (confirm) {
+      setLoading(true);
+      const img = [image];
+      img.push(...JSON.parse(features_img));
+      const { error, message } = await store?.deleteData(
+        `/api/product?id=${id}&image=${img.join(",")}`
+      );
+      if (!error) {
+        store?.setAlert({ msg: message, type: "success" });
+        setUpdate((prev) => !prev);
+      } else {
+        store?.setAlert({ msg: message, type: "error" });
+      }
+      setLoading(false);
+    }
+  }
 
   return (
     <DashboardLayout>
@@ -71,47 +75,67 @@ const Products = () => {
           <table>
             <thead>
               <tr>
-                <th>SN</th>
+                <th>ID</th>
                 <th>Image</th>
                 <th>Name</th>
+                <th>Sku</th>
                 <th>Price</th>
                 <th>Stock</th>
               </tr>
             </thead>
             <tbody>
-              {data.map((item, i) => (
-                <React.Fragment key={i}>
-                  <tr>
-                    <td
-                      className={`sn-item ${
-                        i % 2 === 0 ? "bg-[#f1f1f1]" : "bg-[#f9f9f9]"
-                      }`}
-                      onClick={() => handleAction(i)}
-                    >
-                      {showAction !== i ? <HiPlusCircle /> : <HiMinusCircle />}
-                      <span>{item.sn}</span>
-                    </td>
-                    <td>
-                      <img
-                        className="h-5 object-contain"
-                        src={item.image}
-                        alt=""
+              {products && products.length ? (
+                products.map((item, i) => (
+                  <React.Fragment key={i}>
+                    <tr>
+                      <td
+                        className={`sn-item ${
+                          i % 2 === 0 ? "bg-[#f1f1f1]" : "bg-[#f9f9f9]"
+                        }`}
+                        onClick={() => handleAction(i)}
+                      >
+                        {showAction !== i ? (
+                          <HiPlusCircle />
+                        ) : (
+                          <HiMinusCircle />
+                        )}
+                        <span>{item.id}</span>
+                      </td>
+                      <td>
+                        <img
+                          className="h-5 object-contain"
+                          src={`/assets/${item.main_image}`}
+                          alt=""
+                        />
+                      </td>
+                      <td>{item.name}</td>
+                      <td>{item.sku}</td>
+                      <td>{item.price}</td>
+                      <td>
+                        <p className={item.stock < 5 ? "text-red-500" : ""}>
+                          {item.stock}
+                        </p>
+                      </td>
+                    </tr>
+                    {showAction === i && (
+                      <DocumentHandler
+                        colSpan={5}
+                        editpage={`/admin/product/editproduct?id=${item.id}`}
+                        deleteHandler={() =>
+                          deleteProduct(
+                            item.id,
+                            item.main_image,
+                            item.features_img
+                          )
+                        }
+                        loading={loading}
                       />
-                    </td>
-                    <td>{item.name}</td>
-                    <td>{item.price}</td>
-                    <td>{item.stock}</td>
-                  </tr>
-                  {showAction === i && (
-                    <DocumentHandler
-                      colSpan={4}
-                      editpage={`/admin/product/editproduct?id=${item.id}`}
-                      deleteHandler={() => console.log("click")}
-                      loading={loading}
-                    />
-                  )}
-                </React.Fragment>
-              ))}
+                    )}
+                  </React.Fragment>
+                ))
+              ) : (
+                <NoDataFount colSpan={5} />
+              )}
             </tbody>
           </table>
           <MainPagesFooterPart

@@ -15,7 +15,7 @@ export function getUser(req, res) {
       getDateFromDB(res, sql);
     } else if (req.query.home) {
       // send category for home category page;
-      const page = parseInt(req.query.skip || 0) * req.query.limit;
+      const page = parseInt(req.query.page || 0) * req.query.limit;
       const sql = `SELECT * FROM user LIMIT ${page}, ${req.query.limit}`;
       const count = "SELECT COUNT(id) FROM user";
       getDateFromDB(res, sql, count);
@@ -42,8 +42,7 @@ export async function postUser(req, res) {
 
     //check is user exist;
     const query = `SELECT * FROM user WHERE email='${req.body.email}'`;
-    mySql().query(query, async (err, result) => {
-      mySql().end();
+    mySql.query(query, async (err, result) => {
       if (err) {
         errorHandler(res, { message: err.sqlMessage });
       } else {
@@ -64,8 +63,7 @@ export async function postUser(req, res) {
 
           //save to db;
           const sql = "INSERT INTO user SET ?";
-          mySql().query(sql, req.body, (err, result) => {
-            mySql().end();
+          mySql.query(sql, req.body, (err, result) => {
             if (err) return errorHandler(res, { message: err.sqlMessage });
             else {
               if (result.insertId > 0) {
@@ -86,8 +84,7 @@ export async function postUser(req, res) {
 export function deleteUser(req, res) {
   try {
     const sql = `DELETE FROM user WHERE id=${req.query.id}`;
-    mySql().query(sql, (err) => {
-      mySql().end();
+    mySql.query(sql, (err) => {
       if (err) return errorHandler(res, { message: err.sqlMessage });
       if (req.query.image) {
         deleteImage(req.query.image);
@@ -118,8 +115,7 @@ export async function updateUser(req, res) {
     });
 
     const sql = `UPDATE user SET ${data} WHERE id=${req.query.id}`;
-    mySql().query(sql, (err, result) => {
-      mySql().end();
+    mySql.query(sql, (err, result) => {
       if (err) return errorHandler(res, { message: err.sqlMessage });
       else {
         if (result.changedRows > 0) {

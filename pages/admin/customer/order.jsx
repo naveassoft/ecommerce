@@ -7,10 +7,26 @@ import { useForm } from "react-hook-form";
 import React, { useState } from "react";
 import { AiTwotoneCustomerService } from "react-icons/ai";
 import Link from "next/link";
+import {
+  DocumentHandler,
+  MainPagesFooterPart,
+  MainPagesTopPart,
+  PageInfo,
+} from "../../../components/admin/common/common";
+import useStore from "../../../components/context/useStore";
 
 const DOrder = () => {
   const [showAction, setShowAction] = useState(-1);
   const { handleSubmit, register } = useForm();
+  const [loading, setLoading] = useState(false);
+  const [update, setUpdate] = useState(false);
+  const [filtered, setfiltered] = useState("");
+  const [orders, setOrders] = useState(null);
+  const [limit, setLimit] = useState(5);
+  const [count, setCount] = useState(0);
+  const [page, setPage] = useState(0);
+  const store = useStore();
+
   async function onsubmit(data) {
     console.log(data);
   }
@@ -56,18 +72,22 @@ const DOrder = () => {
     },
   ];
 
+  const filterOpt = [
+    { txt: "Processing", value: "processing" },
+    { txt: "shipping", value: "Shipping" },
+    { txt: "deliverd", value: "Deliverd" },
+    { txt: "canceled", value: "Canceled" },
+  ];
+
   return (
     <DashboardLayout>
       <div className="dashboard-home-container">
-        <div className="page-info">
-          <div className="icon">
-            <AiTwotoneCustomerService />
-          </div>
-          <div>
-            <h3>Order Information</h3>
-            <p>View Order Information from here</p>
-          </div>
-        </div>
+        <PageInfo
+          title="Order"
+          icon={<AiTwotoneCustomerService />}
+          type="View"
+        />
+
         <div className="container">
           <div className="date-picker">
             <form onSubmit={handleSubmit(onsubmit)}>
@@ -82,32 +102,16 @@ const DOrder = () => {
               <button className="btn active">Search</button>
             </form>
           </div>
-          <div className="flex justify-between mb-3">
-            <div className="flex gap-3 items-center">
-              <select>
-                <option value="10">10</option>
-                <option value="10">25</option>
-                <option value="10">50</option>
-                <option value="10">100</option>
-              </select>
-              <p>items/page</p>
-            </div>
-            <div className="flex gap-3 items-center">
-              <p className="font-medium">Filter Order:</p>
-              <select>
-                <option value="">ALL</option>
-                <option value="processing">Processing</option>
-                <option value="shipping">Shipping</option>
-                <option value="deliverd">Deliverd</option>
-                <option value="canceled">Canceled</option>
-              </select>
-            </div>
-          </div>
+          <MainPagesTopPart
+            setFilter={setfiltered}
+            filterOpt={filterOpt}
+            setLimit={setLimit}
+          />
 
           <table>
             <thead>
               <tr>
-                <th>SN</th>
+                <th>ID</th>
                 <th>DATE</th>
                 <th>ORDER</th>
                 <th>INVOICE</th>
@@ -135,46 +139,25 @@ const DOrder = () => {
                     <td>{item.status}</td>
                   </tr>
                   {showAction === i && (
-                    <tr>
-                      <td colSpan={6}>
-                        <AnimatePresence>
-                          <motion.div
-                            variants={menuAnimation}
-                            initial="hidden"
-                            animate="show"
-                            exit="hidden"
-                            className="flex gap-5 items-center border-x"
-                          >
-                            <p className="font-bold text-gray-600">Action</p>
-                            <div className="flex gap-2">
-                              <Link href="/admin/customer/view-order/3">
-                                <FaEye className="text-orange-400 w-5" />
-                              </Link>
-                              <FaTrash className="text-red-500" />
-                            </div>
-                          </motion.div>
-                        </AnimatePresence>
-                      </td>
-                    </tr>
+                    <DocumentHandler
+                      colSpan={6}
+                      editpage={`/admin/cutomer/order?id=${2}`}
+                      deleteHandler={() => console.log("click")}
+                      loading={loading}
+                    />
                   )}
                 </React.Fragment>
               ))}
             </tbody>
           </table>
-          <div className="flex justify-between mt-6">
-            <p className="text-sm">Showing 1 to 10 of 12 entries</p>
-            <div className="flex gap-1">
-              <button disabled className="btn">
-                Previous
-              </button>
-              <button className="btn active">1</button>
-              <button className="btn">Next</button>
-            </div>
-          </div>
+          <MainPagesFooterPart
+            count={count}
+            limit={limit}
+            page={page}
+            setPage={setPage}
+            showingData={orders?.length || 0}
+          />
         </div>
-        <p className="my-7 text-gray-400 text-sm">
-          Copyright © 2022 All Rights Reserved.
-        </p>
       </div>
     </DashboardLayout>
   );

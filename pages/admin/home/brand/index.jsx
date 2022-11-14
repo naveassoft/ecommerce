@@ -34,7 +34,7 @@ const DBrand = () => {
     (async function () {
       if (store) {
         const { data, error } = await store?.fetchData(
-          `/api/brand?home=true&limit=${limit}&skip=${page}`
+          `/api/brand?home=true&limit=${limit}&page=${page}`
         );
         if (data) {
           setBrand(data.data);

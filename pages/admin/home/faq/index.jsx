@@ -30,7 +30,7 @@ const DFAQ = () => {
     (async function () {
       if (store) {
         const { data, error } = await store?.fetchData(
-          `/api/faq?home=true&limit=${limit}&skip=${page}`
+          `/api/faq?home=true&limit=${limit}&page=${page}`
         );
         if (data) {
           setFaq(data.data);

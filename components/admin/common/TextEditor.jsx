@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import JoditEditor from "jodit-react";
 const confiq = {
   buttons: [
@@ -16,7 +16,12 @@ const confiq = {
 };
 
 const TextEditor = ({ editorRef, value }) => {
-  const [content, setContent] = useState(value || "");
+  const [content, setContent] = useState("");
+
+  useEffect(() => {
+    if (value) setContent(value);
+    return;
+  }, [value]);
 
   return (
     <div>

@@ -31,7 +31,7 @@ const DOffer = () => {
     (async function () {
       if (store) {
         const { data, error } = await store?.fetchData(
-          `/api/offer?home=true&limit=${limit}&skip=${page}`
+          `/api/offer?home=true&limit=${limit}&page=${page}`
         );
         if (data) {
           setOffer(data.data);

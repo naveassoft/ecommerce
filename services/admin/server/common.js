@@ -3,26 +3,23 @@ import multer from "multer";
 import path from "path";
 import fs from "fs";
 
-export function mySql() {
-  const db = mysql.createConnection({
-    host: "localhost",
-    user: "root",
-    database: "ecommerce",
-    password: "",
-    connectionLimit: 10,
-  });
-  return db;
-}
+export const mySql = mysql.createConnection({
+  host: "localhost",
+  user: "root",
+  database: "ecommerce",
+  password: "",
+});
 
 export function getDateFromDB(res, query, count = undefined) {
-  return mySql().query(query, (err, data) => {
-    mySql().end();
+  return mySql.query(query, (err, data) => {
     if (err) return errorHandler(res, { message: err.sqlMessage });
     if (count) {
-      mySql().query(count, (err, totalDocument) => {
-        mySql().end();
-        if (err) throw err;
-        res.send({ count: totalDocument[0]["COUNT(id)"], data });
+      mySql.query(count, (err, totalDocument) => {
+        if (err) {
+          errorHandler(res, { message: err.sqlMessage });
+        } else {
+          res.send({ count: totalDocument[0]["COUNT(id)"], data });
+        }
       });
     } else {
       res.send(data);

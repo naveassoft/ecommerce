@@ -20,8 +20,7 @@ export async function updateFooterPages(req, res) {
   try {
     const data = `description = '${req.body.description}'`;
     const sql = `UPDATE footer_pages SET ${data} WHERE name='${req.query.name}'`;
-    mySql().query(sql, (err, result) => {
-      mySql().end();
+    mySql.query(sql, (err, result) => {
       if (err) {
         res.status(500).send({ message: "Unable to Update, please try again" });
       } else {

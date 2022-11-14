@@ -21,13 +21,15 @@ export function PageInfo({ title, type, icon }) {
 export function MainPagesTopPart({ setLimit, addLink, setFilter, filterOpt }) {
   return (
     <>
-      <div className="flex justify-end mb-3">
-        <Link href={addLink}>
-          <button className="red-btn">
-            <span>New</span> <HiPlusCircle />
-          </button>
-        </Link>
-      </div>
+      {addLink && (
+        <div className="flex justify-end mb-3">
+          <Link href={addLink}>
+            <button className="red-btn">
+              <span>New</span> <HiPlusCircle />
+            </button>
+          </Link>
+        </div>
+      )}
 
       <div className="flex justify-between mb-3">
         <div className="flex gap-3 items-center">

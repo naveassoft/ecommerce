@@ -15,13 +15,16 @@ const TextEditor = dynamic(
 
 const AddProduct = () => {
   const [subCategory, setSubCategory] = useState(null);
-  const [category, setCategory] = useState(null);
   const { handleSubmit, register, reset } = useForm();
+  const [showProsub, setShowProSub] = useState(null);
+  const [category, setCategory] = useState(null);
   const [loading, setLoading] = useState(false);
   const [showSub, setShowSub] = useState(null);
+  const [prosub, setProSub] = useState(null);
   const description = useRef(null);
   const store = useStore();
 
+  //get category , sub category, pro sub category info;
   useEffect(() => {
     (async function () {
       const { data, error } = await store?.fetchData("/api/category");
@@ -33,17 +36,33 @@ const AddProduct = () => {
       if (data) setSubCategory(data);
       else store?.setAlert({ msg: error, type: "error" });
     })();
-  }, []);
+    (async function () {
+      const { data, error } = await store?.fetchData("/api/prosub");
+      if (data) setProSub(data);
+      else store?.setAlert({ msg: error, type: "error" });
+    })();
+  }, []); //till;
 
+  //handle sub category based on category;
   function handleSubCategory(id) {
     if (id) {
       const sub = subCategory?.filter((item) => item.category_id == id);
       if (sub.length) setShowSub(sub);
       else setShowSub(null);
     } else setShowSub(null);
-  }
+  } //till;
+  //handle pro sub category based on sub category;
+  function handleProSub(id) {
+    if (id) {
+      const sub = prosub?.filter((item) => item.sub_category_id == id);
+      if (sub.length) setShowProSub(sub);
+      else setShowProSub(null);
+    } else setShowProSub(null);
+  } //till;
 
+  //save data to db;
   async function onSubmit(data) {
+    //check description has value;
     if (!description.current?.value) {
       return store?.setAlert({
         msg: "Please add the product description",
@@ -51,6 +70,7 @@ const AddProduct = () => {
       });
     }
     setLoading(true);
+    //find the category, sub category and pro sub name base on their ids;
     data.category_name = category?.find(
       (item) => item.id == data.category_id
     )?.name;
@@ -59,8 +79,15 @@ const AddProduct = () => {
         (item) => item.id == data.sub_category_id
       )?.name;
     }
+    if (data.pro_sub_id) {
+      data.pro_sub_name = prosub?.find(
+        (item) => item.id == data.pro_sub_id
+      )?.name;
+    } //till;
+
     data.description = description.current?.value;
     data.main_image = data.main_image[0];
+    data.created_by = 2;
     const formData = new FormData();
     Object.entries(data).forEach(([key, value]) => {
       if (key !== "features_img") {
@@ -85,7 +112,7 @@ const AddProduct = () => {
       store?.setAlert({ msg: message, type: "error" });
     }
     setLoading(false);
-  }
+  } //till;
 
   const inputs = [
     {
@@ -180,13 +207,30 @@ const AddProduct = () => {
             <div>
               <label>Product Sub Category</label>
               <select
+                {...register("sub_category_id", { required: showSub })}
+                onChange={(e) => handleProSub(e.target.value)}
                 className="w-full"
                 required={showSub}
-                {...register("sub_category_id", { required: showSub })}
               >
                 <option value="">select</option>
                 {showSub &&
                   showSub.map((item) => (
+                    <option key={item.id} value={item.id}>
+                      {item.name}
+                    </option>
+                  ))}
+              </select>
+            </div>
+            <div>
+              <label>Product Pro Sub Category</label>
+              <select
+                {...register("pro_sub_id", { required: showProsub })}
+                className="w-full"
+                required={showProsub}
+              >
+                <option value="">select</option>
+                {showProsub &&
+                  showProsub.map((item) => (
                     <option key={item.id} value={item.id}>
                       {item.name}
                     </option>

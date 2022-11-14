@@ -33,7 +33,7 @@ const DUser = () => {
   useEffect(() => {
     (async function () {
       const { data, error } = await store?.fetchData(
-        `/api/user?home=true&limit=${limit}&skip=${page}`
+        `/api/user?home=true&limit=${limit}&page=${page}`
       );
       if (data) {
         setUser(data.data);

@@ -27,6 +27,16 @@
   select {
     @apply px-3 py-2 rounded border outline-none;
   }
+  .delete-btn-onhover {
+    @apply absolute top-0 left-0 w-full h-full bg-[#eeeeeeb2] flex 
+    justify-center items-center text-gray-700 opacity-0 transition-opacity;
+  }
+  .delete-btn-container-onhover {
+    @apply relative cursor-pointer;
+  }
+  .delete-btn-container-onhover:hover .delete-btn-onhover {
+    @apply opacity-100;
+  }
 }
 
 @layer components {
@@ -69,7 +79,7 @@
     @apply text-xl font-semibold;
   }
   .admin-header {
-    @apply bg-white shadow-md h-[60px] flex items-center sticky top-0;
+    @apply bg-white shadow-md h-[60px] flex items-center sticky top-0 z-40;
   }
   .admin-header .header-wrapper {
     @apply flex justify-between w-full items-center mr-10;

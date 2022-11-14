@@ -36,7 +36,7 @@ const DCupon = () => {
     (async function () {
       if (store) {
         const { data, error } = await store?.fetchData(
-          `/api/coupon?home=true&limit=${limit}&skip=${page}`
+          `/api/coupon?home=true&limit=${limit}&page=${page}`
         );
         if (data) {
           setCoupon(data.data);

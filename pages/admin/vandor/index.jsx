@@ -33,7 +33,7 @@ const Vandor = () => {
   useEffect(() => {
     (async function () {
       const { data, error } = await store?.fetchData(
-        `/api/vandor?home=true&limit=${limit}&skip=${page}`
+        `/api/vandor?home=true&limit=${limit}&page=${page}`
       );
       if (data) {
         setVandor(data.data);

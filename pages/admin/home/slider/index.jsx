@@ -30,7 +30,7 @@ const DSlider = () => {
     (async function () {
       if (store) {
         const { data, error } = await store?.fetchData(
-          `/api/slider?home=true&limit=${limit}&skip=${page}`
+          `/api/slider?home=true&limit=${limit}&page=${page}`
         );
         if (data) {
           setSlider(data.data);

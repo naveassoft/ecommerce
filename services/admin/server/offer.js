@@ -14,7 +14,7 @@ export function getOffer(req, res) {
       getDateFromDB(res, sql);
     } else if (req.query.home) {
       // send category for home category page;
-      const page = parseInt(req.query.skip || 0) * req.query.limit;
+      const page = parseInt(req.query.page || 0) * req.query.limit;
       const sql = `SELECT * FROM offer LIMIT ${page}, ${req.query.limit}`;
       const count = "SELECT COUNT(id) FROM offer";
       getDateFromDB(res, sql, count);
@@ -40,8 +40,7 @@ export async function postOffer(req, res) {
     req.body.priority = parseInt(req.body.priority);
     req.body.image = req.files.image[0].filename;
     const sql = "INSERT INTO offer SET ?";
-    mySql().query(sql, req.body, (err, result) => {
-      mySql().end();
+    mySql.query(sql, req.body, (err, result) => {
       if (err) throw err;
       else {
         if (result.insertId > 0) {
@@ -59,8 +58,7 @@ export async function postOffer(req, res) {
 export function deleteOffer(req, res) {
   try {
     const sql = `DELETE FROM offer WHERE id=${req.query.id}`;
-    mySql().query(sql, (err) => {
-      mySql().end();
+    mySql.query(sql, (err) => {
       if (err) throw err;
       deleteImage(req.query.image);
       res.send({ message: "Deleted successfully" });
@@ -92,8 +90,7 @@ export async function updateOffer(req, res) {
     });
 
     const sql = `UPDATE offer SET ${data} WHERE id=${req.query.id}`;
-    mySql().query(sql, (err, result) => {
-      mySql().end();
+    mySql.query(sql, (err, result) => {
       if (err) throw err;
       else {
         if (result.changedRows > 0) {

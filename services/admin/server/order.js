@@ -1,20 +1,20 @@
 import { errorHandler, getDateFromDB, mySql } from "./common";
 
-export function getProSub(req, res) {
+export function getOder(req, res) {
   try {
     if (req.query.id) {
       //send single category;
-      const sql = `SELECT * FROM pro_sub_category WHERE id=${req.query.id}`;
+      const sql = `SELECT * FROM faq WHERE id=${req.query.id}`;
       getDateFromDB(res, sql);
     } else if (req.query.home) {
       // send category for home category page;
       const page = parseInt(req.query.page || 0) * req.query.limit;
-      const sql = `SELECT * FROM pro_sub_category LIMIT ${page}, ${req.query.limit}`;
-      const count = "SELECT COUNT(id) FROM pro_sub_category";
+      const sql = `SELECT * FROM faq LIMIT ${page}, ${req.query.limit}`;
+      const count = "SELECT COUNT(id) FROM faq";
       getDateFromDB(res, sql, count);
     } else {
       //send all category
-      const sql = "SELECT * FROM pro_sub_category";
+      const sql = "SELECT * FROM faq";
       getDateFromDB(res, sql);
     }
   } catch (error) {
@@ -22,14 +22,14 @@ export function getProSub(req, res) {
   }
 }
 
-export async function postProSub(req, res) {
+export async function postOrder(req, res) {
   try {
-    const sql = "INSERT INTO pro_sub_category SET ?";
+    const sql = "INSERT INTO faq SET ?";
     mySql.query(sql, req.body, (err, result) => {
       if (err) throw err;
       else {
         if (result.insertId > 0) {
-          res.send({ message: "Pro Sub Category Added Successfully" });
+          res.send({ message: "Faq Added Successfully" });
         } else {
           res.send({ message: "Unable to Added, please try again" });
         }
@@ -40,9 +40,9 @@ export async function postProSub(req, res) {
   }
 }
 
-export function deleteProsub(req, res) {
+export function deleteOrder(req, res) {
   try {
-    const sql = `DELETE FROM pro_sub_category WHERE id=${req.query.id}`;
+    const sql = `DELETE FROM faq WHERE id=${req.query.id}`;
     mySql.query(sql, (err) => {
       if (err) throw err;
       res.send({ message: "Deleted successfully" });
@@ -52,21 +52,22 @@ export function deleteProsub(req, res) {
   }
 }
 
-export async function updatetProsub(req, res) {
+export async function updateOrder(req, res) {
   try {
     let data = "";
     Object.entries(req.body).forEach(([key, value]) => {
+      if (!value) return;
       if (data) {
         data += `, ${key} = '${value}'`;
       } else data += `${key} = '${value}'`;
     });
 
-    const sql = `UPDATE pro_sub_category SET ${data} WHERE id=${req.query.id}`;
+    const sql = `UPDATE faq SET ${data} WHERE id=${req.query.id}`;
     mySql.query(sql, (err, result) => {
       if (err) throw err;
       else {
         if (result.changedRows > 0) {
-          res.send({ message: "Pro Sub Category Updated Successfully" });
+          res.send({ message: "Faq Updated Successfully" });
         } else {
           res.send({ message: "Unable to Update, please try again" });
         }

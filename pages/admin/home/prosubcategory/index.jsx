@@ -30,7 +30,7 @@ const ProSubCategory = () => {
     (async function () {
       if (store) {
         const { data, error } = await store?.fetchData(
-          `/api/prosub?home=true&limit=${limit}&skip=${page}`
+          `/api/prosub?home=true&limit=${limit}&page=${page}`
         );
         if (data) {
           setCategory(data.data);

@@ -31,7 +31,7 @@ const ADV = () => {
     (async function () {
       if (store) {
         const { data, error } = await store?.fetchData(
-          `/api/adv?home=true&limit=${limit}&skip=${page}`
+          `/api/adv?home=true&limit=${limit}&page=${page}`
         );
         if (data) {
           setAdv(data.data);
