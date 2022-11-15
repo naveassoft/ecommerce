@@ -1,30 +1,69 @@
-import { errorHandler, getDateFromDB, getTime, mySql } from "./common";
+import { errorHandler, getDateFromDB, mySql } from "./common";
 
 export function getOder(req, res) {
   if (req.query.id) {
     //send single order;
     const sql = `SELECT * FROM orders WHERE id=${req.query.id}`;
     getDateFromDB(res, sql);
-  } else if (req.query.status) {
-    // send orders based on status;
-    const limit = req.query.limit || 10;
-    const page = parseInt(req.query.page || 0) * limit;
-    const sql = `SELECT * FROM orders WHERE status = '${req.query.status}' LIMIT ${page}, ${limit}`;
-    const count = `SELECT COUNT(id) FROM orders WHERE status = '${req.query.status}'`;
-    getDateFromDB(res, sql, count);
-  } else if (req.query.date) {
-    // send orders based on datae;
+  }
+  //
+  else if (req.query.date && req.query.status) {
     if (!req.query.start && !req.query.end) {
       errorHandler(res, { message: "Start date and End date must be given" });
       return;
     }
     const limit = req.query.limit || 10;
     const page = parseInt(req.query.page || 0) * limit;
-    const sql = `SELECT * FROM orders WHERE created_at BETWEEN '${req.query.start}' AND '${req.query.end}' LIMIT ${page}, ${limit}`;
+    const sql = `SELECT * FROM orders WHERE created_at >= '${req.query.start}' AND created_at <= '${req.query.end}' AND status = '${req.query.status}' LIMIT ${page}, ${limit}`;
     const count = `SELECT COUNT(id) FROM orders WHERE created_at BETWEEN '${req.query.start}' AND '${req.query.end}'`;
     getDateFromDB(res, sql, count);
-  } else {
-    // send orders for home order page;
+  }
+  // send orders based on status;
+  else if (req.query.status) {
+    const limit = req.query.limit || 10;
+    const page = parseInt(req.query.page || 0) * limit;
+    const sql = `SELECT * FROM orders WHERE status = '${req.query.status}' LIMIT ${page}, ${limit}`;
+    const count = `SELECT COUNT(id) FROM orders WHERE status = '${req.query.status}'`;
+    getDateFromDB(res, sql, count);
+  }
+  // send orders based on datae;
+  else if (req.query.date) {
+    if (!req.query.start && !req.query.end) {
+      errorHandler(res, { message: "Start date and End date must be given" });
+      return;
+    }
+    const limit = req.query.limit || 10;
+    const page = parseInt(req.query.page || 0) * limit;
+    const sql = `SELECT * FROM orders WHERE created_at >= '${req.query.start}' AND created_at <= '${req.query.end}' LIMIT ${page}, ${limit}`;
+    const count = `SELECT COUNT(id) FROM orders WHERE created_at BETWEEN '${req.query.start}' AND '${req.query.end}'`;
+    getDateFromDB(res, sql, count);
+  }
+  //send customer whose placed order ;
+  else if (req.query.customer) {
+    const limit = req.query.limit || 10;
+    const page = parseInt(req.query.page || 0) * limit;
+    const sql = `SELECT DISTINCT customer_id FROM orders LIMIT ${page}, ${limit}`;
+
+    mySql.query(sql, (err, result) => {
+      if (err) return errorHandler(res, { message: err.sqlMessage });
+      if (!result.length) {
+        return errorHandler(res, { message: "Not Found", status: 404 });
+      }
+      const customerId = [];
+      result.forEach((item) => customerId.push(item.customer_id));
+      const query = `SELECT * FROM user WHERE id IN(${customerId})`;
+      const count = "SELECT DISTINCT customer_id FROM orders";
+      mySql.query(query, (err, data) => {
+        if (err) return errorHandler(res, { message: err.sqlMessage });
+        mySql.query(count, (err, count) => {
+          if (err) return errorHandler(res, { message: err.sqlMessage });
+          res.send({ count: count.length, data });
+        });
+      });
+    });
+  }
+  // send orders for home order page;
+  else {
     const limit = req.query.limit || 10;
     const page = parseInt(req.query.page || 0) * limit;
     const sql = `SELECT * FROM orders LIMIT ${page}, ${limit}`;

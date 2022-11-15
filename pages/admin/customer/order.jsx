@@ -57,7 +57,7 @@ const DOrder = () => {
   } //til;
 
   //get orders ;
-  async function getAllProduct() {
+  async function getAllOrder() {
     const { data, error } = await store?.fetchData(
       `/api/order?limit=${limit}&page=${page}`
     );
@@ -69,11 +69,11 @@ const DOrder = () => {
     }
   }
   useEffect(() => {
-    getAllProduct();
+    getAllOrder();
   }, [update]); //till
 
   //get all product by status;
-  async function getProductByStatus() {
+  async function getOrderByStatus() {
     if (filtered !== null) {
       dispatch({ type: "status", value: filtered });
       const { data, error } = await store?.fetchData(
@@ -91,11 +91,11 @@ const DOrder = () => {
     }
   }
   useEffect(() => {
-    getProductByStatus();
+    getOrderByStatus();
   }, [filtered]); //till;
 
   //get order by date;
-  async function getProductbyDate(payload) {
+  async function getOrderbyDate(payload) {
     const { data, error } = await store?.fetchData(
       `/api/order?date=true&start=${payload.start_date}&end=${payload.end_date}&limit=${limit}&page=${page}`
     );
@@ -154,11 +154,11 @@ const DOrder = () => {
   //pagination;
   useEffect(() => {
     if (state.status) {
-      getProductByStatus();
+      getOrderByStatus();
     } else if (state.date) {
-      getProductbyDate(state.date);
+      getOrderbyDate(state.date);
     } else {
-      getAllProduct();
+      getAllOrder();
     }
   }, [page, limit]);
 
@@ -181,7 +181,7 @@ const DOrder = () => {
 
         <div className="container">
           <div className="date-picker">
-            <form onSubmit={handleSubmit(getProductbyDate)}>
+            <form onSubmit={handleSubmit(getOrderbyDate)}>
               <input
                 {...register("start_date", { required: true })}
                 type="date"

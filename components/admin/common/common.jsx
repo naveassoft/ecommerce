@@ -120,16 +120,20 @@ export function DocumentHandler({
           >
             <p className="font-bold text-gray-600">Action</p>
             <div className="flex gap-2">
-              <Link href={editpage}>
-                {title && title === "view" ? (
-                  <FaEye className="text-orange-400 w-7" />
-                ) : (
-                  <FaEdit className="text-orange-400" />
-                )}
-              </Link>
-              <button disabled={loading} onClick={deleteHandler}>
-                <FaTrash className="text-red-500" />
-              </button>
+              {editpage && (
+                <Link href={editpage}>
+                  {title && title === "view" ? (
+                    <FaEye className="text-orange-400 w-7" />
+                  ) : (
+                    <FaEdit className="text-orange-400" />
+                  )}
+                </Link>
+              )}
+              {deleteHandler && (
+                <button disabled={loading} onClick={deleteHandler}>
+                  <FaTrash className="text-red-500" />
+                </button>
+              )}
             </div>
           </motion.div>
         </AnimatePresence>

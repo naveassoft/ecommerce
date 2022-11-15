@@ -54,12 +54,13 @@ export async function postUser(req, res) {
           return res.status(401).send({ message: "User already exist" });
         } else {
           //no user, you procced;
-          //hase password;
+          //hased password;
           const hashed = await bcrypt.hash(req.body.password, 10);
           req.body.password = hashed;
           if (req.files.profile) {
             req.body.profile = req.files.profile[0].filename;
           } else delete req.body.profile;
+          req.body.joined_at = new Date();
 
           //save to db;
           const sql = "INSERT INTO user SET ?";
