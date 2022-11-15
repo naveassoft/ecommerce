@@ -42,7 +42,7 @@
 @layer components {
   /* commont styles for all */
   .page-info {
-    @apply flex gap-5 pt-7;
+    @apply flex gap-5 pt-7 print:hidden;
   }
   .page-info .icon {
     @apply text-5xl text-gray-700;
@@ -59,7 +59,7 @@
   ------------------------- */
   .sidebar {
     @apply bg-[#1d2939] text-white h-screen overflow-y-auto
-    fixed top-0 bottom-0 left-0 overflow-x-hidden z-50;
+    fixed top-0 bottom-0 left-0 overflow-x-hidden z-50 print:hidden;
   }
   .sidebar .top_section {
     @apply flex items-center justify-between px-3 py-4 bg-white
@@ -79,7 +79,8 @@
     @apply text-xl font-semibold;
   }
   .admin-header {
-    @apply bg-white shadow-md h-[60px] flex items-center sticky top-0 z-40;
+    @apply bg-white shadow-md h-[60px] flex items-center sticky top-0 z-40
+    print:hidden;
   }
   .admin-header .header-wrapper {
     @apply flex justify-between w-full items-center mr-10;
@@ -142,12 +143,13 @@
   }
 
   .dashboard {
-    @apply p-3 pl-[88px] bg-[#e9ecef] pr-8;
+    @apply p-3 pl-[88px] bg-[#e9ecef] pr-8 print:pl-0 print:pr-0;
   }
 
   /* order page  */
   .order-deatils-container {
-    @apply py-14 px-20 bg-white rounded shadow mt-10;
+    @apply py-14 px-20 bg-white rounded shadow mt-10 print:px-0 
+    print:mt-0 print:py-0 print:shadow-none;
   }
   .order-deatils-container .wrapper {
     @apply border px-1 text-gray-500;
@@ -159,7 +161,7 @@
     @apply flex flex-col items-center;
   }
   .order-deatils-container .icons-wrapper div div {
-    @apply h-10 w-10 rounded-full bg-[navy] flex justify-center items-center 
+    @apply h-10 w-10 rounded-full flex justify-center items-center 
     text-white text-lg;
   }
   .order-deatils-container .order-info {
@@ -185,7 +187,8 @@
     @apply w-[300px];
   }
   .total-calc-wrapper div div {
-    @apply grid grid-cols-3 gap-5 justify-end border-b py-2 pr-4;
+    @apply grid grid-cols-3 gap-5 justify-end items-center border-b py-2 
+    pr-12 print:pr-5;
   }
   .total-calc-wrapper div div h4 {
     @apply col-span-2;
@@ -229,6 +232,23 @@ a.jodit-status-bar-link {
   white-space: nowrap;
   font-size: 15px;
   cursor: pointer;
+}
+
+.icons-wrapper .highlight {
+  background-color: #000080e2;
+}
+.icons-wrapper .none {
+  background-color: #808080(128, 128, 128, 0.409);
+}
+
+@media print {
+  .icons-wrapper .highlight {
+    background-color: #000080e2;
+    print-color-adjust: exact;
+  }
+  .icons-wrapper .none {
+    background-color: #808080(128, 128, 128, 0.409);
+  }
 }
 
 .menu {

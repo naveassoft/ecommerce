@@ -1,6 +1,6 @@
 import { AnimatePresence, motion } from "framer-motion";
 import Link from "next/link";
-import { FaEdit, FaHome, FaTrash } from "react-icons/fa";
+import { FaEdit, FaEye, FaHome, FaTrash } from "react-icons/fa";
 import { HiPlusCircle } from "react-icons/hi";
 import { menuAnimation } from "../components/SidebarMenu";
 
@@ -100,7 +100,13 @@ export function MainPagesFooterPart({
   );
 }
 
-export function DocumentHandler({ colSpan, editpage, loading, deleteHandler }) {
+export function DocumentHandler({
+  colSpan,
+  editpage,
+  loading,
+  deleteHandler,
+  title,
+}) {
   return (
     <tr>
       <td colSpan={colSpan}>
@@ -115,7 +121,11 @@ export function DocumentHandler({ colSpan, editpage, loading, deleteHandler }) {
             <p className="font-bold text-gray-600">Action</p>
             <div className="flex gap-2">
               <Link href={editpage}>
-                <FaEdit className="text-orange-400" />
+                {title && title === "view" ? (
+                  <FaEye className="text-orange-400 w-7" />
+                ) : (
+                  <FaEdit className="text-orange-400" />
+                )}
               </Link>
               <button disabled={loading} onClick={deleteHandler}>
                 <FaTrash className="text-red-500" />
@@ -125,5 +135,22 @@ export function DocumentHandler({ colSpan, editpage, loading, deleteHandler }) {
         </AnimatePresence>
       </td>
     </tr>
+  );
+}
+
+export function MySqlDate({ date }) {
+  let datetime = date.slice(0, 10);
+  let d = parseInt(datetime.slice(8, 10));
+  d = d > 30 ? "01" : d + 1;
+  datetime = date.slice(0, 8) + d;
+  return <p>{datetime}</p>;
+}
+
+export function Amount({ value }) {
+  return (
+    <p>
+      <span className="text-3xl">৳</span>
+      <span className="text-lg">{value}</span>
+    </p>
   );
 }

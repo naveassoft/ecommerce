@@ -141,7 +141,7 @@ const DashboardLayout = ({ children }) => {
       </motion.div>
       <main className="dashboard">
         {children}
-        <p className="my-7 text-gray-400 text-sm">
+        <p className="my-7 text-gray-400 text-sm print:hidden">
           Copyright © 2022 All Rights Reserved.
         </p>
       </main>

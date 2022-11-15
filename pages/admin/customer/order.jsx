@@ -1,21 +1,42 @@
-import { menuAnimation } from "../../../components/admin/components/SidebarMenu";
 import DashboardLayout from "../../../components/admin/common/DashboardLayout";
 import { HiMinusCircle, HiPlusCircle } from "react-icons/hi";
-import { FaEye, FaTrash } from "react-icons/fa";
-import { AnimatePresence, motion } from "framer-motion";
-import { useForm } from "react-hook-form";
-import React, { useState } from "react";
+import useStore from "../../../components/context/useStore";
 import { AiTwotoneCustomerService } from "react-icons/ai";
-import Link from "next/link";
+import React, { useEffect, useReducer, useState } from "react";
+import { useForm } from "react-hook-form";
 import {
   DocumentHandler,
   MainPagesFooterPart,
   MainPagesTopPart,
+  MySqlDate,
+  NoDataFount,
   PageInfo,
 } from "../../../components/admin/common/common";
-import useStore from "../../../components/context/useStore";
+
+const initialState = {
+  normal: true,
+  status: false,
+  date: false,
+};
+const reducer = (state, action) => {
+  switch (action.type) {
+    case "normal":
+      return { normal: true, status: null, date: null };
+    case "status":
+      return { normal: false, status: { value: action.value }, date: null };
+    case "date":
+      return {
+        normal: false,
+        status: null,
+        date: { start_date: action.start_date, end_date: action.end_date },
+      };
+    default:
+      return { normal: true, status: null, date: null };
+  }
+};
 
 const DOrder = () => {
+  const [state, dispatch] = useReducer(reducer, initialState);
   const [showAction, setShowAction] = useState(-1);
   const { handleSubmit, register } = useForm();
   const [loading, setLoading] = useState(false);
@@ -27,56 +48,126 @@ const DOrder = () => {
   const [page, setPage] = useState(0);
   const store = useStore();
 
-  async function onsubmit(data) {
-    console.log(data);
-  }
+  //handle view and delete action button;
   function handleAction(i) {
     setShowAction((prev) => {
       if (prev === i) return -1;
       else return i;
     });
+  } //til;
+
+  //get orders ;
+  async function getAllProduct() {
+    const { data, error } = await store?.fetchData(
+      `/api/order?limit=${limit}&page=${page}`
+    );
+    if (data) {
+      setOrders(data.data);
+      setCount(data.count);
+    } else {
+      store?.setAlert({ msg: error, type: "error" });
+    }
+  }
+  useEffect(() => {
+    getAllProduct();
+  }, [update]); //till
+
+  //get all product by status;
+  async function getProductByStatus() {
+    if (filtered !== null) {
+      dispatch({ type: "status", value: filtered });
+      const { data, error } = await store?.fetchData(
+        `/api/order?status=${filtered}&limit=${limit}&page=${page}`
+      );
+      if (data) {
+        setOrders(data.data);
+        setCount(data.count);
+        if (!filtered) {
+          dispatch({ type: "normal" });
+        }
+      } else {
+        store?.setAlert({ msg: error, type: "error" });
+      }
+    }
+  }
+  useEffect(() => {
+    getProductByStatus();
+  }, [filtered]); //till;
+
+  //get order by date;
+  async function getProductbyDate(payload) {
+    const { data, error } = await store?.fetchData(
+      `/api/order?date=true&start=${payload.start_date}&end=${payload.end_date}&limit=${limit}&page=${page}`
+    );
+    if (data) {
+      setOrders(data.data);
+      setCount(data.count);
+      dispatch({
+        type: "date",
+        start_date: payload.start_date,
+        end_date: payload.end_date,
+      });
+    } else {
+      dispatch("normal");
+      store?.setAlert({ msg: error, type: "error" });
+    }
   }
 
-  const data = [
-    {
-      sn: 1,
-      date: "March 20, 2022",
-      order: "OR-2022032072801",
-      invoice: "INV-2022032072801",
-      name: "Abc",
-      status: "Processing",
-    },
-    {
-      sn: 2,
-      date: "March 20, 2022",
-      order: "OR-2022032072801",
-      invoice: "INV-2022032072801",
-      name: "Abc",
-      status: "Processing",
-    },
-    {
-      sn: 3,
-      date: "March 20, 2022",
-      order: "OR-2022032072801",
-      invoice: "INV-2022032072801",
-      name: "Abc",
-      status: "Processing",
-    },
-    {
-      sn: 4,
-      date: "March 20, 2022",
-      order: "OR-2022032072801",
-      invoice: "INV-2022032072801",
-      name: "Abc",
-      status: "Processing",
-    },
-  ];
+  //delete user;
+  async function deleteOrder(id) {
+    const confirm = window.confirm("Are you sure to delete the user?");
+    if (confirm) {
+      setLoading(true);
+      const { error, message } = await store?.deleteData(`/api/order?id=${id}`);
+      if (!error) {
+        store?.setAlert({ msg: message, type: "success" });
+        setUpdate((prev) => !prev);
+      } else {
+        store?.setAlert({ msg: message, type: "error" });
+      }
+      setLoading(false);
+    }
+  } //till;
+
+  //update order;
+  async function updateOrder(status, id) {
+    try {
+      const confirm = window.confirm("Are you sure to update the order?");
+      if (confirm) {
+        const res = await fetch(`/api/order?id=${id}`, {
+          method: "PUT",
+          headers: {
+            "content-type": "application/json",
+          },
+          body: JSON.stringify({ status }),
+        });
+        const result = await res.json();
+        if (res.ok) {
+          store?.setAlert({ msg: result.message, type: "success" });
+        } else throw result;
+      }
+    } catch (error) {
+      store?.setAlert({ msg: error.message, type: "error" });
+    }
+  }
+
+  //pagination;
+  useEffect(() => {
+    if (state.status) {
+      getProductByStatus();
+    } else if (state.date) {
+      getProductbyDate(state.date);
+    } else {
+      getAllProduct();
+    }
+  }, [page, limit]);
 
   const filterOpt = [
+    { txt: "All", value: "" },
     { txt: "Processing", value: "processing" },
-    { txt: "shipping", value: "Shipping" },
-    { txt: "deliverd", value: "Deliverd" },
-    { txt: "canceled", value: "Canceled" },
+    { txt: "Shipping", value: "shipping" },
+    { txt: "Delivered", value: "delivered" },
+    { txt: "Canceled", value: "canceled" },
   ];
 
   return (
@@ -90,13 +181,13 @@ const DOrder = () => {
 
         <div className="container">
           <div className="date-picker">
-            <form onSubmit={handleSubmit(onsubmit)}>
+            <form onSubmit={handleSubmit(getProductbyDate)}>
               <input
-                {...register("start-date", { required: true })}
+                {...register("start_date", { required: true })}
                 type="date"
               />
               <input
-                {...register("end-date", { required: true })}
+                {...register("end_date", { required: true })}
                 type="date"
               />
               <button className="btn active">Search</button>
@@ -120,34 +211,61 @@ const DOrder = () => {
               </tr>
             </thead>
             <tbody>
-              {data.map((item, i) => (
-                <React.Fragment key={i}>
-                  <tr>
-                    <td
-                      className={`sn-item ${
-                        i % 2 === 0 ? "bg-[#f1f1f1]" : "bg-[#f9f9f9]"
-                      }`}
-                      onClick={() => handleAction(i)}
-                    >
-                      {showAction !== i ? <HiPlusCircle /> : <HiMinusCircle />}
-                      <span>{item.sn}</span>
-                    </td>
-                    <td>{item.date}</td>
-                    <td>{item.order}</td>
-                    <td>{item.invoice}</td>
-                    <td>{item.name}</td>
-                    <td>{item.status}</td>
-                  </tr>
-                  {showAction === i && (
-                    <DocumentHandler
-                      colSpan={6}
-                      editpage={`/admin/cutomer/order?id=${2}`}
-                      deleteHandler={() => console.log("click")}
-                      loading={loading}
-                    />
-                  )}
-                </React.Fragment>
-              ))}
+              {orders && orders.length ? (
+                orders.map((item, i) => (
+                  <React.Fragment key={i}>
+                    <tr>
+                      <td
+                        onClick={() => handleAction(i)}
+                        className={`${
+                          i % 2 === 0 ? "bg-[#f1f1f1]" : "bg-[#f9f9f9]"
+                        }`}
+                      >
+                        <div className="sn-item">
+                          {showAction !== i ? (
+                            <HiPlusCircle />
+                          ) : (
+                            <HiMinusCircle />
+                          )}
+                          <span>{item.id}</span>
+                        </div>
+                      </td>
+                      <td>
+                        <MySqlDate date={item.created_at} />
+                      </td>
+                      <td>{item.order_id}</td>
+                      <td>{item.invoice_id}</td>
+                      <td>{item.customer_name}</td>
+                      <td>
+                        <select
+                          onChange={(e) => updateOrder(e.target.value, item.id)}
+                        >
+                          {filterOpt.slice(1, filterOpt.length).map((opt) => (
+                            <option
+                              selected={item.status === opt.value}
+                              key={opt.value}
+                              value={opt.value}
+                            >
+                              {opt.txt}
+                            </option>
+                          ))}
+                        </select>
+                      </td>
+                    </tr>
+                    {showAction === i && (
+                      <DocumentHandler
+                        editpage={`/admin/customer/vieworder?id=${item.id}`}
+                        deleteHandler={() => deleteOrder(item.id)}
+                        colSpan={6}
+                        title="view"
+                        loading={loading}
+                      />
+                    )}
+                  </React.Fragment>
+                ))
+              ) : (
+                <NoDataFount colSpan={6} />
+              )}
             </tbody>
           </table>
           <MainPagesFooterPart

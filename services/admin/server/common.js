@@ -8,6 +8,7 @@ export const mySql = mysql.createConnection({
   user: "root",
   database: "ecommerce",
   password: "",
+  max_connections: 10,
 });
 
 export function getDateFromDB(res, query, count = undefined) {
@@ -74,6 +75,7 @@ export async function bodyParser(req, res, folder, images) {
 }
 
 export function errorHandler(res, error) {
+  console.log(error);
   res
     .status(error.status || 500)
     .send({ message: error.message || "Serverside error" });

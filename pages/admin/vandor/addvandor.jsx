@@ -14,6 +14,12 @@ const AddVandor = () => {
   const store = useStore(null);
 
   async function onsubmit(data) {
+    if (!/^(?:(?:\+|00)88|01)?\d{11}$/.test(data.mobile)) {
+      return store?.setAlert({
+        msg: "Mobile number is invalid",
+        type: "error",
+      });
+    }
     //check password;
     if (data.password !== data.confirm_password) {
       return store?.setAlert({
@@ -68,6 +74,15 @@ const AddVandor = () => {
                 required
                 type="email"
                 placeholder="Vandor Email"
+              />
+            </div>
+            <div>
+              <label>Phone Number </label>
+              <input
+                {...register("number", { required: true })}
+                required
+                type="text"
+                placeholder="Vandor Phone number"
               />
             </div>
             <div>

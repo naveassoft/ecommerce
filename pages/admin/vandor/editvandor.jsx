@@ -33,6 +33,12 @@ const EditVandor = () => {
 
   async function onsubmit(data) {
     if (!vandor) return;
+    if (data.number && !/^(?:(?:\+|00)88|01)?\d{11}$/.test(data.mobile)) {
+      return store?.setAlert({
+        msg: "Mobile number is invalid",
+        type: "error",
+      });
+    }
 
     setLoading(true);
     const formData = new FormData();
@@ -78,6 +84,15 @@ const EditVandor = () => {
                 defaultValue={vandor?.email}
                 readOnly
                 placeholder="Vandor Email"
+              />
+            </div>
+            <div>
+              <label>Phone Number </label>
+              <input
+                {...register("number")}
+                type="text"
+                defaultValue={vandor?.number}
+                placeholder="Vandor Phone number"
               />
             </div>
             <div>

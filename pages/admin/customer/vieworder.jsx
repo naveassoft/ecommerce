@@ -1,117 +1,153 @@
-import React from "react";
-import { useForm } from "react-hook-form";
+import DashboardLayout from "../../../components/admin/common/DashboardLayout";
 import { FaShippingFast } from "react-icons/fa";
 import { GiCheckMark } from "react-icons/gi";
-import DashboardLayout from "../../../components/admin/common/DashboardLayout";
+import { useForm } from "react-hook-form";
+import React, { useEffect, useState } from "react";
+import { Amount, PageInfo } from "../../../components/admin/common/common";
+import { useRouter } from "next/router";
+import useStore from "../../../components/context/useStore";
+import IndicatorIcon from "../../../components/admin/components/order/IndicatorIcon";
 
 const ViewOrder = () => {
   const { handleSubmit, register } = useForm();
+  const [order, setOrder] = useState(null);
+  const [vandor, setVandor] = useState(null);
+  const router = useRouter();
+  const store = useStore();
   const status = ["processing", "shipping", "delivered", "canceled"];
-  function onSubmit(data) {}
 
-  const data = [
-    {
-      sn: 1,
-      image: "/assets/product.jpg",
-      name: "Lorem, ipsum dolor sit amet consectetur adipisicing elit. Delectus, atque! Nobis temporibus reiciendis ad accusamus labore earum veritatis culpa fugit.",
-      price: 2000,
-      qty: 1,
-      total: 2000,
-    },
-    {
-      sn: 2,
-      image: "/assets/product.jpg",
-      name: "Lorem, ipsum dolor sit amet consectetur adipisicing elit. Delectus, atque! Nobis temporibus reiciendis ad accusamus labore earum veritatis culpa fugit.",
-      price: 2000,
-      qty: 1,
-      total: 2000,
-    },
-  ];
+  useEffect(() => {
+    if (router.query.id) {
+      (async function () {
+        const { data, error } = await store?.fetchData(
+          `/api/order?id=${router.query.id}`
+        );
+        if (data) {
+          const vandor = await store?.fetchData(
+            `/api/vandor?id=${data[0].vandor_id}`
+          );
+          if (vandor.data) {
+            setVandor(vandor.data[0]);
+            setOrder(data[0]);
+          } else {
+            store?.setAlert({ msg: error, type: "error" });
+            router.push("/admin/customer/order");
+          }
+        } else {
+          store?.setAlert({ msg: error, type: "error" });
+          router.push("/admin/customer/order");
+        }
+      })();
+    }
+  }, [router.query.id]);
 
+  //update order;
+  async function updateOrder(data) {
+    try {
+      if (!order) return;
+      const confirm = window.confirm("Are you sure to update the order?");
+      if (confirm) {
+        const res = await fetch(`/api/order?id=${order.id}`, {
+          method: "PUT",
+          headers: {
+            "content-type": "application/json",
+          },
+          body: JSON.stringify({ status: data.status }),
+        });
+        const result = await res.json();
+        if (res.ok) {
+          store?.setAlert({ msg: result.message, type: "success" });
+        } else throw result;
+      }
+    } catch (error) {
+      store?.setAlert({ msg: error.message, type: "error" });
+    }
+  }
+
+  if (!order || !vandor) return null;
   return (
     <DashboardLayout>
       <section>
-        <div className="page-info">
-          <div className="icon">
-            <FaShippingFast />
-          </div>
-          <div>
-            <h3>Detail of Order</h3>
-            <p>View Detail of Order from here</p>
-          </div>
-        </div>
+        <PageInfo
+          title="Detail of Order"
+          type="View"
+          icon={<FaShippingFast />}
+        />
+
         <div className="order-deatils-container">
           <p className="text-gray-500 bg-gray-100 p-2 rounded-t w-fit">
             Order Shipments
           </p>
           <section className="wrapper">
-            <div className="icons-wrapper">
-              <div>
-                <div>
-                  <GiCheckMark />
-                </div>
-                <p>Processing</p>
-              </div>
-              <div>
-                <div>
-                  <GiCheckMark />
-                </div>
-                <p>Shipping</p>
-              </div>
-              <div>
-                <div>
-                  <GiCheckMark />
-                </div>
-                <p>Delivered</p>
-              </div>
-            </div>
+            <IndicatorIcon status={order.status} />
+
             <div className="bg-[#C53600] h-6"></div>
+
+            {/* order info start */}
             <div className="order-info">
+              {/* vandor info start */}
               <div className="flex gap-2 items-center">
                 <div>
-                  <img
-                    className="object-contain h-14"
-                    src="/shop-logo.png"
-                    alt="logo"
-                  />
+                  {vandor?.shop_logo ? (
+                    <img
+                      className="object-contain h-14"
+                      src={`/assets/${vandor.shop_logo}`}
+                      alt="logo"
+                    />
+                  ) : null}
                 </div>
                 <p className="leading-5">
-                  Amirastore <br /> Banasree,Rampura Dhaka <br /> 01677052152
+                  {vandor.name} <br /> {vandor.shop_location} <br />
+                  {vandor.number}
                   <br />
-                  safihealth123@gmail.com
+                  {vandor.email}
                 </p>
               </div>
+              {/* vandor info end */}
+
+              {/* invoice info start */}
               <div>
                 <h3 className="text-center text-xl font-medium">INVOICE</h3>
                 <hr />
                 <p>
-                  November 8, 2022 <br /> INV-2022032072801
+                  {order.created_at.slice(0, 10)} <br /> {order.invoice_id}
                 </p>
               </div>
+              {/* invoice info end */}
             </div>
+            {/* order info end */}
+
+            {/* shipping and billing address info start */}
             <div className="shipping-info">
               <div>
                 <h3>SHIP TO</h3>
                 <hr />
                 <p>
-                  Abc <br /> hurairaha8249@gmail.com <br /> 01636141891 <br />{" "}
-                  asds
+                  {vandor.name} <br /> {vandor.shop_location} <br />
+                  {vandor.email}
+                  <br />
+                  {vandor.number}
                 </p>
               </div>
               <div>
                 <h3>BILL TO</h3>
                 <hr />
                 <p>
-                  Abc <br /> hurairaha8249@gmail.com <br /> 01636141891 <br />{" "}
-                  asds
+                  {order.customer_name} <br /> {order.shipping_address} <br />
+                  {order.customer_phone}
+                  <br />
+                  {order.customer_email}
                 </p>
               </div>
             </div>
+            {/* shipping and billing address info end */}
+
+            {/* product info start  */}
             <div className="px-2">
-              <table>
+              <table className="w-full">
                 <thead>
                   <tr>
-                    <td>SN</td>
+                    <td>ID</td>
                     <td>Image</td>
                     <td>Product Name</td>
                     <td>Price</td>
@@ -120,59 +156,87 @@ const ViewOrder = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {data.map((product) => (
-                    <tr key={product.sn}>
-                      <td>{product.sn}</td>
+                  {JSON.parse(order.product_info).map((product) => (
+                    <tr key={product.product_id}>
+                      <td>{product.product_id}</td>
                       <td>
                         <img
                           className="h-14 object-contain w-16"
-                          src={product.image}
+                          src={`/assets/${product.image}`}
                           alt="img"
                         />
                       </td>
                       <td className="text-[#0866C6]">{product.name}</td>
-                      <td className="text-red-500">${product.price}</td>
-                      <td>{product.qty}</td>
-                      <td className="text-red-500">${product.total}</td>
+                      <td>
+                        <Amount value={product.price} />
+                      </td>
+                      <td>{product.quantity}</td>
+                      <td>
+                        <Amount value={product.price * product.quantity} />
+                      </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
+              {/* product info end  */}
+
               <div className="total-calc-wrapper">
                 <div>
                   <div>
                     <h4>Sub Total</h4>
-                    <p className="text-red-500">$4000</p>
+                    <p className="text-green-800 font-medium">
+                      <Amount value={order.sub_total} />
+                    </p>
+                  </div>
+                  <div>
+                    <h4>Discount</h4>
+                    <p className="text-yellow-700">
+                      <Amount value={order.discount} />
+                    </p>
                   </div>
                   <div>
                     <h4>Tax</h4>
-                    <p className="text-red-500">$30</p>
+                    <p className="text-red-500">
+                      <Amount value={order.tax} />
+                    </p>
                   </div>
                   <div>
                     <h4>Shipping & Handling</h4>
-                    <p className="text-red-500">$400</p>
+                    <p className="text-red-500">
+                      <Amount value={order.shipping_charge} />
+                    </p>
                   </div>
                   <div>
                     <h4>Grand Total</h4>
-                    <p className="text-red-500">$6000</p>
+                    <p className="text-green-800 font-medium">
+                      <Amount value={order.total} />
+                    </p>
                   </div>
                 </div>
               </div>
               <div className="bg-[#C53600] h-2 mb-8 mt-5"></div>
-              <div className="flex justify-end mb-5">
-                <button className="btn">Print</button>
+              <div className="flex justify-end mb-5 print:hidden">
+                <button onClick={() => window.print()} className="btn">
+                  Print
+                </button>
               </div>
             </div>
           </section>
+
           <form
-            onSubmit={handleSubmit(onSubmit)}
-            className="my-5 px-7 text-gray-500"
+            onSubmit={handleSubmit(updateOrder)}
+            className="my-5 px-7 text-gray-500 print:hidden"
           >
             <div className="flex gap-5 items-center">
               <label htmlFor="status">Update Status</label>
-              <select {...register("status")} className="w-[85%]" name="status">
+              <select
+                required
+                {...register("status", { required: true })}
+                className="w-[85%]"
+                name="status"
+              >
                 {status.map((st, i) => (
-                  <option key={i} value={st}>
+                  <option selected={order.status === st} key={i} value={st}>
                     {st}
                   </option>
                 ))}
