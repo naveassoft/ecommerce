@@ -78,7 +78,6 @@ export async function postOrder(req, res) {
   mySql.query(query_1, (err, result) => {
     if (err) errorHandler(res, { message: err.sqlMessage });
     else {
-      console.log({ result });
       //user not exist;
       if (!result.length) {
         res.status(403).send({ message: "Unknown user" });
