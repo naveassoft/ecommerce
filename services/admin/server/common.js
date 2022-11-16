@@ -3,12 +3,12 @@ import multer from "multer";
 import path from "path";
 import fs from "fs";
 
-export const mySql = mysql.createConnection({
+export const mySql = mysql.createPool({
   host: "localhost",
   user: "root",
   database: "ecommerce",
   password: "",
-  max_connections: 10,
+  connectionLimit: 10,
 });
 
 export function getDateFromDB(res, query, count = undefined) {

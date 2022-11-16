@@ -12,6 +12,7 @@ import {
   NoDataFount,
   PageInfo,
 } from "../../../components/admin/common/common";
+import { updateOrder } from "../../../components/admin/components/order/updateOrder";
 
 const initialState = {
   normal: true,
@@ -129,28 +130,6 @@ const DOrder = () => {
     }
   } //till;
 
-  //update order;
-  async function updateOrder(status, id) {
-    try {
-      const confirm = window.confirm("Are you sure to update the order?");
-      if (confirm) {
-        const res = await fetch(`/api/order?id=${id}`, {
-          method: "PUT",
-          headers: {
-            "content-type": "application/json",
-          },
-          body: JSON.stringify({ status }),
-        });
-        const result = await res.json();
-        if (res.ok) {
-          store?.setAlert({ msg: result.message, type: "success" });
-        } else throw result;
-      }
-    } catch (error) {
-      store?.setAlert({ msg: error.message, type: "error" });
-    }
-  }
-
   //pagination;
   useEffect(() => {
     if (state.status) {
@@ -238,7 +217,9 @@ const DOrder = () => {
                       <td>{item.customer_name}</td>
                       <td>
                         <select
-                          onChange={(e) => updateOrder(e.target.value, item.id)}
+                          onChange={(e) =>
+                            updateOrder(e.target.value, item, store, setUpdate)
+                          }
                         >
                           {filterOpt.slice(1, filterOpt.length).map((opt) => (
                             <option

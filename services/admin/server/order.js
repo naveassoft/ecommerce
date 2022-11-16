@@ -74,71 +74,91 @@ export function getOder(req, res) {
 
 export async function postOrder(req, res) {
   //check user is exist to db;
-  const query_1 = `SELECT * FROM user WHERE id = '${req.body.customer_id}' AND email = '${req.body.customer_email}'`;
+  const query_1 = `SELECT id FROM user WHERE id = '${req.body.customer_id}' AND email = '${req.body.customer_email}'`;
   mySql.query(query_1, (err, result) => {
     if (err) errorHandler(res, { message: err.sqlMessage });
     else {
+      console.log({ result });
       //user not exist;
       if (!result.length) {
-        res.status(403).send({ message: "Forbidden" });
+        res.status(403).send({ message: "Unknown user" });
       } else {
-        req.body.created_at = new Date();
-        req.body.order_id = "OR-" + Date.now();
-        req.body.invoice_id = "INV-" + Date.now();
+        //user exist, now check is vandor exist;
+        const query_2 = `SELECT id FROM vandor WHERE id = '${req.body.vandor_id}'`;
+        mySql.query(query_2, (err, result) => {
+          if (err) errorHandler(res, { message: err.sqlMessage });
+          else {
+            //vandor is not exist;
+            if (!result.length) {
+              res.status(403).send({ message: "Unknown vandor" });
+            } else {
+              // all done, go ahead;
+              req.body.created_at = new Date();
+              req.body.order_id = "OR-" + Date.now();
+              req.body.invoice_id = "INV-" + Date.now();
 
-        const product = req.body.product_info;
-        const errors = [];
+              const product = req.body.product_info;
+              const errors = [];
 
-        product.forEach((item, i) => {
-          //user exist , now check stock whether available;
-          const query_2 = `SELECT stock FROM product WHERE id = '${item.product_id}'`;
-          mySql.query(query_2, (err, result) => {
-            if (err) errors.push(item.product_id);
-            else {
-              //product is not found in db;
-              if (!result.length) {
-                errors.push(item.product_id);
-              }
-              //stock is not available;
-              else if (result[0].stock < item.quantity) {
-                errors.push(item.product_id);
-              }
-              //at the end of the array;
-              if (product.length - 1 === i) {
-                //is error exist, filter the product;
-                if (errors.length) {
-                  const existedProduct = product.filter((item) => {
-                    for (let i = 0; i < errors.length; i++) {
-                      if (item.product_id !== errors[i]) {
-                        return true;
-                      } else return false;
+              product.forEach((item, i) => {
+                //now check stock whether available;
+                const query_3 = `SELECT stock FROM product WHERE id = '${item.product_id}'`;
+                mySql.query(query_3, (err, result) => {
+                  if (err) errors.push(item.product_id);
+                  else {
+                    //product is not found in db;
+                    if (!result.length) {
+                      errors.push(item.product_id);
                     }
-                  });
-                  req.body.product_info = existedProduct;
-                }
-                //if all product are invalid ;
-                if (!req.body.product_info.length) {
-                  res.status(403).send({ message: "Forbidden" });
-                } else {
-                  //finally save to db, all operation done;
-                  req.body.product_info = JSON.stringify(req.body.product_info);
-                  const sql = "INSERT INTO orders SET ?";
-                  mySql.query(sql, req.body, (err, result) => {
-                    if (err) errorHandler(res, { message: err.sqlMessage });
-                    else {
-                      if (result.insertId > 0) {
-                        res.send({ message: "Order Created Successfully" });
+                    //stock is not available;
+                    else if (result[0].stock < item.quantity) {
+                      errors.push(item.product_id);
+                    }
+
+                    //at the end of the array;
+                    if (product.length - 1 === i) {
+                      //is error exist, filter the product;
+                      if (errors.length) {
+                        const existedProduct = product.filter((item) => {
+                          for (let i = 0; i < errors.length; i++) {
+                            if (item.product_id !== errors[i]) {
+                              return true;
+                            } else return false;
+                          }
+                        });
+                        req.body.product_info = existedProduct;
+                      }
+                      //if all product are invalid ;
+                      if (!req.body.product_info.length) {
+                        res.status(403).send({ message: "Forbidden" });
                       } else {
-                        res.send({
-                          message: "Unable to Added, please try again",
+                        //finally save to db, all operation done;
+                        req.body.product_info = JSON.stringify(
+                          req.body.product_info
+                        );
+                        const query_4 = "INSERT INTO orders SET ?";
+                        mySql.query(query_4, req.body, (err, order) => {
+                          if (err)
+                            errorHandler(res, { message: err.sqlMessage });
+                          else {
+                            if (order.insertId > 0) {
+                              res.send({
+                                message: "Order Created Successfully",
+                              });
+                            } else {
+                              res.send({
+                                message: "Unable to Added, please try again",
+                              });
+                            }
+                          }
                         });
                       }
                     }
-                  });
-                }
-              }
+                  }
+                });
+              });
             }
-          });
+          }
         });
       }
     }
@@ -154,15 +174,54 @@ export function deleteOrder(req, res) {
 }
 
 export async function updateOrder(req, res) {
+  if (req.body.order_status === "delivered") {
+    return errorHandler(res, {
+      message: "This order was delivered",
+      status: 403,
+    });
+  }
   const sql = `UPDATE orders SET status = '${req.body.status}' WHERE id=${req.query.id}`;
   mySql.query(sql, (err, result) => {
     if (err) errorHandler(res, { message: err.sqlMessage });
     else {
-      if (result.changedRows > 0) {
-        res.send({ message: "Order Updated Successfully" });
-      } else {
-        res.send({ message: "Unable to Update, please try again" });
+      if (result.changedRows === 0) {
+        return res.send({ message: "Unable to Update, please try again" });
       }
+      const status = req.body.status;
+      const orderStatus = req.body.order_status;
+
+      //update user;
+      if (status === "delivered") {
+        const query = `UPDATE user SET order_placed = order_placed + ${1} WHERE id= ${
+          req.body.customer_id
+        }`;
+        mySql.query(query, (err) => {
+          if (err) console.log(err);
+          res.send({ message: "Order Updated Successfully" });
+        });
+      }
+
+      //update product;
+      if (/processing|delivered/.test(status)) {
+        return res.send({ message: "Order Updated Successfully" });
+      }
+      JSON.parse(req.body.products).forEach((product, i, arr) => {
+        let query = "";
+        if (status === "shipping") {
+          query = `UPDATE product SET stock = stock - ${product.quantity} WHERE id= ${product.product_id}`;
+        } else if (orderStatus === "shipping" && status === "canceled") {
+          query = `UPDATE product SET stock = stock + ${product.quantity} WHERE id= ${product.product_id}`;
+        }
+        if (!query) {
+          return res.send({ message: "Order Updated Successfully" });
+        }
+        mySql.query(query, (err) => {
+          if (err) console.log(err);
+          if (arr.length - 1 === i) {
+            res.send({ message: "Order Updated Successfully" });
+          }
+        });
+      }); //till;
     }
   });
 }

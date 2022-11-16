@@ -1,16 +1,18 @@
-import DashboardLayout from "../../../components/admin/common/DashboardLayout";
-import { FaShippingFast } from "react-icons/fa";
-import { GiCheckMark } from "react-icons/gi";
-import { useForm } from "react-hook-form";
-import React, { useEffect, useState } from "react";
-import { Amount, PageInfo } from "../../../components/admin/common/common";
-import { useRouter } from "next/router";
-import useStore from "../../../components/context/useStore";
 import IndicatorIcon from "../../../components/admin/components/order/IndicatorIcon";
+import DashboardLayout from "../../../components/admin/common/DashboardLayout";
+import { Amount, PageInfo } from "../../../components/admin/common/common";
+import useStore from "../../../components/context/useStore";
+import React, { useEffect, useState } from "react";
+import { FaShippingFast } from "react-icons/fa";
+import { useForm } from "react-hook-form";
+import { useRouter } from "next/router";
+import { updateOrder } from "../../../components/admin/components/order/updateOrder";
 
 const ViewOrder = () => {
   const { handleSubmit, register } = useForm();
   const [order, setOrder] = useState(null);
+  const [update, setUpdate] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [vandor, setVandor] = useState(null);
   const router = useRouter();
   const store = useStore();
@@ -39,28 +41,13 @@ const ViewOrder = () => {
         }
       })();
     }
-  }, [router.query.id]);
+  }, [router.query.id, update]);
 
-  //update order;
-  async function updateOrder(data) {
-    try {
-      if (!order) return;
-      const confirm = window.confirm("Are you sure to update the order?");
-      if (confirm) {
-        const res = await fetch(`/api/order?id=${order.id}`, {
-          method: "PUT",
-          headers: {
-            "content-type": "application/json",
-          },
-          body: JSON.stringify({ status: data.status }),
-        });
-        const result = await res.json();
-        if (res.ok) {
-          store?.setAlert({ msg: result.message, type: "success" });
-        } else throw result;
-      }
-    } catch (error) {
-      store?.setAlert({ msg: error.message, type: "error" });
+  async function onSubmit(data) {
+    if (order && order.status !== data.status) {
+      setLoading(true);
+      await updateOrder(data.status, order, store, setUpdate);
+      setLoading(false);
     }
   }
 
@@ -224,7 +211,7 @@ const ViewOrder = () => {
           </section>
 
           <form
-            onSubmit={handleSubmit(updateOrder)}
+            onSubmit={handleSubmit(onSubmit)}
             className="my-5 px-7 text-gray-500 print:hidden"
           >
             <div className="flex gap-5 items-center">
@@ -243,7 +230,10 @@ const ViewOrder = () => {
               </select>
             </div>
             <div className="mt-3 flex justify-center">
-              <button className="px-10 py-2 bg-green-500 text-white rounded text-sm">
+              <button
+                disabled={loading}
+                className="px-10 py-2 bg-green-500 text-white rounded text-sm"
+              >
                 Update
               </button>
             </div>
