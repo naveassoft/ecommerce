@@ -44,17 +44,22 @@ const DCategory = () => {
   }, [update, limit, page]);
 
   async function deleteCategory(id, image) {
-    setLoading(true);
-    const { error, message } = await store?.deleteData(
-      `/api/category?id=${id}&image=${image}`
+    const confirm = window.confirm(
+      "Do you want to delete this category and all sub category, pro sub category under this?"
     );
-    if (!error) {
-      store?.setAlert({ msg: message, type: "success" });
-      setUpdate((prev) => !prev);
-    } else {
-      store?.setAlert({ msg: message, type: "error" });
+    if (confirm) {
+      setLoading(true);
+      const { error, message } = await store?.deleteData(
+        `/api/category?id=${id}&image=${image}`
+      );
+      if (!error) {
+        store?.setAlert({ msg: message, type: "success" });
+        setUpdate((prev) => !prev);
+      } else {
+        store?.setAlert({ msg: message, type: "error" });
+      }
+      setLoading(false);
     }
-    setLoading(false);
   }
 
   return (

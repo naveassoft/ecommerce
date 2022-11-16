@@ -15,7 +15,7 @@ export function getCategory(req, res) {
     } else if (req.query.home) {
       // send category for home category page;
       const page = parseInt(req.query.page || 0) * req.query.limit;
-      const sql = `SELECT * FROM category LIMIT ${page}, ${req.query.limit}`;
+      const sql = `SELECT * FROM category ORDER BY priority LIMIT ${page}, ${req.query.limit}`;
       const count = "SELECT COUNT(id) FROM category";
       getDateFromDB(res, sql, count);
     } else {
@@ -56,16 +56,47 @@ export async function postCategory(req, res) {
 }
 
 export function deleteCategory(req, res) {
-  try {
-    const sql = `DELETE FROM category WHERE id=${req.query.id}`;
-    mySql.query(sql, (err) => {
-      if (err) throw err;
-      deleteImage(req.query.image);
-      res.send({ message: "Deleted successfully" });
+  //delete category;
+  const categoryQuery = `DELETE FROM category WHERE id=${req.query.id}`;
+  mySql.query(categoryQuery, (err) => {
+    if (err) return errorHandler(res, { message: err.sqlMessage });
+    deleteImage(req.query.image);
+
+    //find sub category under this categroy;
+    const subgettingq = `SELECT id, image FROM sub_category WHERE category_id=${req.query.id}`;
+    mySql.query(subgettingq, (err, result) => {
+      if (err) console.log(err);
+      const subId = [],
+        imges = [];
+      if (result.length) {
+        result.forEach((item) => {
+          subId.push(item.id);
+          imges.push(item.image);
+        });
+      }
+      if (subId.length) {
+        //delete sub category under this category;
+        const subyQuery = `DELETE FROM sub_category WHERE category_id=${req.query.id}`;
+        mySql.query(subyQuery, (err) => {
+          if (err) {
+            return errorHandler(res, { message: "Cannot delete sub category" });
+          }
+          imges.forEach((img) => deleteImage(img));
+          // delete pro sub category under those sub category;
+          const prosub = `DELETE FROM pro_sub_category WHERE sub_category_id IN(${subId.join(
+            ","
+          )})`;
+          mySql.query(prosub, (err, result) => {
+            if (err)
+              return errorHandler(res, {
+                message: "Cannot delete pro sub category",
+              });
+            res.send({ message: "Deleted successfully" });
+          }); //till;
+        });
+      }
     });
-  } catch (error) {
-    errorHandler(res, error);
-  }
+  });
 }
 
 export async function updatetCategory(req, res) {
