@@ -208,6 +208,31 @@
   .dashboar-wrapper .report_wrapper > div svg {
     @apply text-5xl;
   }
+
+  /* login form  */
+  .login-container {
+    @apply w-full md:w-[420px] bg-white rounded shadow absolute top-2/4 
+    left-2/4 -translate-x-2/4 -translate-y-2/4 p-10 mt-5;
+  }
+  .login-container form {
+    @apply space-y-5;
+  }
+  .login-container form h3,
+  .login-container form h4 {
+    @apply font-semibold text-center;
+  }
+  .login-container form h3 {
+    @apply text-3xl text-[#17A2B8] tracking-tight;
+  }
+  .login-container form h3 span {
+    @apply text-gray-600;
+  }
+  .login-container form h4 {
+    @apply text-2xl text-gray-500;
+  }
+  .login-container .social-btn {
+    @apply flex gap-2 w-full items-center justify-center;
+  }
 }
 
 a.jodit-status-bar-link {
