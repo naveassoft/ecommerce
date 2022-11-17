@@ -14,7 +14,7 @@ const AddVandor = () => {
   const store = useStore(null);
 
   async function onsubmit(data) {
-    if (!/^(?:(?:\+|00)88|01)?\d{11}$/.test(data.mobile)) {
+    if (!/^(?:(?:\+|00)88|01)?\d{11}$/.test(data.number)) {
       return store?.setAlert({
         msg: "Mobile number is invalid",
         type: "error",

@@ -1,3 +1,4 @@
+import joi from "joi";
 import {
   bodyParser,
   deleteImage,
@@ -28,6 +29,14 @@ export function getAdv(req, res) {
   }
 }
 
+const advSchema = joi.object({
+  category_id: joi.number().integer().required(),
+  category_name: joi.string().required(),
+  sub_category_id: joi.number().integer(),
+  sub_category_name: joi.string(),
+  image: joi.string().required(),
+});
+
 export async function postAdv(req, res) {
   try {
     const img = [{ name: "image", maxCount: 1 }];
@@ -36,11 +45,19 @@ export async function postAdv(req, res) {
     if (error || !req.files.image) {
       throw { message: "Error occured when image updlading" };
     }
-
     req.body.image = req.files.image[0].filename;
+
+    //api validateion;
+    const varify = advSchema.validate(req.body);
+    if (varify.error) {
+      deleteImage(req.body.image);
+      errorHandler(res, { message: varify.error.message });
+      return;
+    }
+
     const sql = "INSERT INTO advertisement SET ?";
     mySql.query(sql, req.body, (err, result) => {
-      if (err) throw err;
+      if (err) throw { message: err.sqlMessage };
       else {
         if (result.insertId > 0) {
           res.send({ message: "Banner Added Successfully" });
@@ -58,7 +75,7 @@ export function deleteAdv(req, res) {
   try {
     const sql = `DELETE FROM advertisement WHERE id=${req.query.id}`;
     mySql.query(sql, (err) => {
-      if (err) throw err;
+      if (err) throw { message: err.sqlMessage };
       deleteImage(req.query.image);
       res.send({ message: "Deleted successfully" });
     });
@@ -90,7 +107,7 @@ export async function updateAdv(req, res) {
 
     const sql = `UPDATE advertisement SET ${data} WHERE id=${req.query.id}`;
     mySql.query(sql, (err, result) => {
-      if (err) throw err;
+      if (err) throw { message: err.sqlMessage };
       else {
         if (result.changedRows > 0) {
           if (exist) {

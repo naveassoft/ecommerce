@@ -44,7 +44,8 @@ const AdADV = () => {
       data.sub_category_name = subCategory?.find(
         (item) => item.id == data.sub_category_id
       )?.name;
-    }
+    } else delete data.sub_category_id;
+
     const formData = new FormData();
     Object.entries(data).forEach(([key, value]) => {
       formData.append(key, value);

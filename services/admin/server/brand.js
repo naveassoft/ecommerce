@@ -1,3 +1,4 @@
+import Joi from "joi";
 import {
   bodyParser,
   deleteImage,
@@ -28,6 +29,13 @@ export function getBrand(req, res) {
   }
 }
 
+const brandSchema = Joi.object({
+  name: Joi.string().required(),
+  category_id: Joi.number().integer().required(),
+  category_name: Joi.string().required(),
+  image: Joi.string().required(),
+});
+
 export async function postBrand(req, res) {
   try {
     const img = [{ name: "image", maxCount: 1 }];
@@ -38,12 +46,21 @@ export async function postBrand(req, res) {
     }
 
     req.body.image = req.files.image[0].filename;
+
+    //api validateion;
+    const varify = brandSchema.validate(req.body);
+    if (varify.error) {
+      deleteImage(req.body.image);
+      errorHandler(res, { message: varify.error.message });
+      return;
+    }
+
     const sql = "INSERT INTO brand SET ?";
     mySql.query(sql, req.body, (err, result) => {
-      if (err) throw err;
+      if (err) throw { message: err.sqlMessage };
       else {
         if (result.insertId > 0) {
-          res.send({ message: "Category Added Successfully" });
+          res.send({ message: "Brand Added Successfully" });
         } else {
           res.send({ message: "Unable to Added, please try again" });
         }
@@ -58,7 +75,7 @@ export function deleteBrand(req, res) {
   try {
     const sql = `DELETE FROM brand WHERE id=${req.query.id}`;
     mySql.query(sql, (err) => {
-      if (err) throw err;
+      if (err) throw { message: err.sqlMessage };
       deleteImage(req.query.image);
       res.send({ message: "Deleted successfully" });
     });
@@ -90,13 +107,13 @@ export async function updatetCategory(req, res) {
 
     const sql = `UPDATE brand SET ${data} WHERE id=${req.query.id}`;
     mySql.query(sql, (err, result) => {
-      if (err) throw err;
+      if (err) throw { message: err.sqlMessage };
       else {
         if (result.changedRows > 0) {
           if (exist) {
             deleteImage(exist);
           }
-          res.send({ message: "Category Updated Successfully" });
+          res.send({ message: "Brand Updated Successfully" });
         } else {
           res.send({ message: "Unable to Update, please try again" });
         }

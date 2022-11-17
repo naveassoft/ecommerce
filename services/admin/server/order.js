@@ -1,3 +1,4 @@
+import Joi from "joi";
 import { errorHandler, getDateFromDB, mySql } from "./common";
 
 export function getOder(req, res) {
@@ -72,7 +73,53 @@ export function getOder(req, res) {
   }
 }
 
+const ProductSchema = Joi.object().keys({
+  product_id: Joi.number().integer().required(),
+  image: Joi.string().required(),
+  name: Joi.string().required(),
+  price: Joi.number().required(),
+  quantity: Joi.number().required(),
+  size: Joi.string(),
+  colour: Joi.string(),
+});
+
+const OrderSchema = Joi.object({
+  created_at: Joi.date().required(),
+  order_id: Joi.string().required(),
+  invoice_id: Joi.string().required(),
+  vandor_id: Joi.number().integer().required(),
+  sub_total: Joi.number().required(),
+  discount: Joi.number().required(),
+  tax: Joi.number().required(),
+  shipping_charge: Joi.number().required(),
+  total: Joi.number().required(),
+  customer_id: Joi.number().integer().required(),
+  customer_name: Joi.string().required(),
+  customer_email: Joi.string().email().required(),
+  shipping_address: Joi.string().required(),
+  customer_comment: Joi.string(),
+  customer_phone: Joi.string().required(),
+  status: Joi.string().valid("processing", "shipping", "delivered", "canceled"),
+  delivery_date: Joi.date().required(),
+  payment_method: Joi.string().valid("cash on delivery", "online payment"),
+  product_info: Joi.array().items(ProductSchema),
+});
+
 export async function postOrder(req, res) {
+  if (!req.body.product_info.length) {
+    errorHandler(res, { message: "product not found" });
+    return;
+  }
+  req.body.created_at = new Date();
+  req.body.order_id = "OR-" + Date.now();
+  req.body.invoice_id = "INV-" + Date.now();
+  //api validateion;
+  const varify = OrderSchema.validate(req.body);
+  if (varify.error) {
+    errorHandler(res, { message: varify.error.message });
+    return;
+  }
+
   //check user is exist to db;
   const query_1 = `SELECT id FROM user WHERE id = '${req.body.customer_id}' AND email = '${req.body.customer_email}'`;
   mySql.query(query_1, (err, result) => {
@@ -82,82 +129,64 @@ export async function postOrder(req, res) {
       if (!result.length) {
         res.status(403).send({ message: "Unknown user" });
       } else {
-        //user exist, now check is vandor exist;
-        const query_2 = `SELECT id FROM vandor WHERE id = '${req.body.vandor_id}'`;
-        mySql.query(query_2, (err, result) => {
-          if (err) errorHandler(res, { message: err.sqlMessage });
-          else {
-            //vandor is not exist;
-            if (!result.length) {
-              res.status(403).send({ message: "Unknown vandor" });
-            } else {
-              // all done, go ahead;
-              req.body.created_at = new Date();
-              req.body.order_id = "OR-" + Date.now();
-              req.body.invoice_id = "INV-" + Date.now();
+        //user esist  all done, go ahead;
 
-              const product = req.body.product_info;
-              const errors = [];
+        const product = req.body.product_info;
+        const errors = [];
 
-              product.forEach((item, i) => {
-                //now check stock whether available;
-                const query_3 = `SELECT stock FROM product WHERE id = '${item.product_id}'`;
-                mySql.query(query_3, (err, result) => {
-                  if (err) errors.push(item.product_id);
-                  else {
-                    //product is not found in db;
-                    if (!result.length) {
-                      errors.push(item.product_id);
+        product.forEach((item, i) => {
+          //now check stock whether available;
+          const query_3 = `SELECT stock FROM product WHERE id = '${item.product_id}'`;
+          mySql.query(query_3, (err, result) => {
+            if (err) errors.push(item.product_id);
+            else {
+              //product is not found in db;
+              if (!result.length) {
+                errors.push(item.product_id);
+              }
+              //stock is not available;
+              else if (result[0].stock < item.quantity) {
+                errors.push(item.product_id);
+              }
+
+              //at the end of the array;
+              if (product.length - 1 === i) {
+                //is error exist, filter the product;
+                if (errors.length) {
+                  const existedProduct = product.filter((item) => {
+                    for (let i = 0; i < errors.length; i++) {
+                      if (item.product_id !== errors[i]) {
+                        return true;
+                      } else return false;
                     }
-                    //stock is not available;
-                    else if (result[0].stock < item.quantity) {
-                      errors.push(item.product_id);
-                    }
-
-                    //at the end of the array;
-                    if (product.length - 1 === i) {
-                      //is error exist, filter the product;
-                      if (errors.length) {
-                        const existedProduct = product.filter((item) => {
-                          for (let i = 0; i < errors.length; i++) {
-                            if (item.product_id !== errors[i]) {
-                              return true;
-                            } else return false;
-                          }
+                  });
+                  req.body.product_info = existedProduct;
+                }
+                //if all product are invalid ;
+                if (!req.body.product_info.length) {
+                  res.status(403).send({ message: "Forbidden" });
+                } else {
+                  //finally save to db, all operation done;
+                  req.body.product_info = JSON.stringify(req.body.product_info);
+                  const query_4 = "INSERT INTO orders SET ?";
+                  mySql.query(query_4, req.body, (err, order) => {
+                    if (err) errorHandler(res, { message: err.sqlMessage });
+                    else {
+                      if (order.insertId > 0) {
+                        res.send({
+                          message: "Order Created Successfully",
                         });
-                        req.body.product_info = existedProduct;
-                      }
-                      //if all product are invalid ;
-                      if (!req.body.product_info.length) {
-                        res.status(403).send({ message: "Forbidden" });
                       } else {
-                        //finally save to db, all operation done;
-                        req.body.product_info = JSON.stringify(
-                          req.body.product_info
-                        );
-                        const query_4 = "INSERT INTO orders SET ?";
-                        mySql.query(query_4, req.body, (err, order) => {
-                          if (err)
-                            errorHandler(res, { message: err.sqlMessage });
-                          else {
-                            if (order.insertId > 0) {
-                              res.send({
-                                message: "Order Created Successfully",
-                              });
-                            } else {
-                              res.send({
-                                message: "Unable to Added, please try again",
-                              });
-                            }
-                          }
+                        res.send({
+                          message: "Unable to Added, please try again",
                         });
                       }
                     }
-                  }
-                });
-              });
+                  });
+                }
+              }
             }
-          }
+          });
         });
       }
     }

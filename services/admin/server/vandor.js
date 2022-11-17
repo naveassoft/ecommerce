@@ -1,4 +1,5 @@
 import bcrypt from "bcrypt";
+import Joi from "joi";
 import {
   bodyParser,
   deleteImage,
@@ -29,6 +30,17 @@ export function getVandor(req, res) {
   }
 }
 
+const VandorSchema = Joi.object({
+  name: Joi.string().max(100).required(),
+  email: Joi.string().email().required(),
+  number: Joi.string().required(),
+  shop_name: Joi.string().max(100).required(),
+  trad_liecence: Joi.number().required(),
+  shop_location: Joi.string().required(),
+  password: Joi.string().min(6).required(),
+  shop_logo: Joi.string(),
+});
+
 export async function postVandor(req, res) {
   try {
     const img = [{ name: "shop_logo", maxCount: 1 }];
@@ -51,6 +63,12 @@ export async function postVandor(req, res) {
           return res.status(401).send({ message: "User already exist" });
         } else {
           //no user, you procced;
+          //api validateion;
+          const varify = VandorSchema.validate(req.body);
+          if (varify.error) {
+            errorHandler(res, { message: varify.error.message });
+            return;
+          }
           //hase password;
           const hashed = await bcrypt.hash(req.body.password, 10);
           req.body.password = hashed;

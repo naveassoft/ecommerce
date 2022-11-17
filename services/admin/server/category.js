@@ -1,3 +1,4 @@
+import Joi from "joi";
 import {
   bodyParser,
   deleteImage,
@@ -28,6 +29,13 @@ export function getCategory(req, res) {
   }
 }
 
+const CategorySchema = Joi.object({
+  priority: Joi.number().required(),
+  name: Joi.string().required(),
+  description: Joi.string().required().max(500),
+  image: Joi.string().required(),
+});
+
 export async function postCategory(req, res) {
   try {
     const img = [{ name: "image", maxCount: 1 }];
@@ -39,9 +47,18 @@ export async function postCategory(req, res) {
 
     req.body.priority = parseInt(req.body.priority);
     req.body.image = req.files.image[0].filename;
+
+    //api validateion;
+    const varify = CategorySchema.validate(req.body);
+    if (varify.error) {
+      deleteImage(req.body.image);
+      errorHandler(res, { message: varify.error.message });
+      return;
+    }
+
     const sql = "INSERT INTO category SET ?";
     mySql.query(sql, req.body, (err, result) => {
-      if (err) throw err;
+      if (err) throw { message: err.sqlMessage };
       else {
         if (result.insertId > 0) {
           res.send({ message: "Category Added Successfully" });
@@ -122,7 +139,7 @@ export async function updatetCategory(req, res) {
 
     const sql = `UPDATE category SET ${data} WHERE id=${req.query.id}`;
     mySql.query(sql, (err, result) => {
-      if (err) throw err;
+      if (err) throw { message: err.sqlMessage };
       else {
         console.log(result);
         if (result.changedRows > 0) {

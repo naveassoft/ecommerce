@@ -1,10 +1,9 @@
-import React, { useEffect, useState } from "react";
-import { FaHome } from "react-icons/fa";
-import { useForm } from "react-hook-form";
 import DashboardLayout from "../../../../components/admin/common/DashboardLayout";
-import Link from "next/link";
-import useStore from "../../../../components/context/useStore";
 import { PageInfo } from "../../../../components/admin/common/common";
+import useStore from "../../../../components/context/useStore";
+import React, { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
+import Link from "next/link";
 
 const AdSubCategory = () => {
   const { handleSubmit, register, reset } = useForm();

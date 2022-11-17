@@ -54,7 +54,7 @@ const EditFaq = () => {
         store?.setAlert({ msg: result.message, type: "success" });
       } else throw result;
     } catch (error) {
-      store?.setAlert({ msg: result.message, type: "error" });
+      store?.setAlert({ msg: error.message, type: "error" });
     }
     setLoading(false);
   }

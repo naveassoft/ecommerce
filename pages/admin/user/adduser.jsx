@@ -8,10 +8,9 @@ import React, { useState } from "react";
 import Link from "next/link";
 
 const AddUser = () => {
-  const [showPassword, setShowPassword] = useState(false);
-  const { handleSubmit, register, reset } = useForm();
-  const [loading, setLoading] = useState(false);
-  const store = useStore(null);
+  const [showPassword, setShowPassword] = useState(false),
+    { handleSubmit, register, reset } = useForm(),
+    [loading, setLoading] = (useState(false).store = useStore(null));
 
   async function onsubmit(data) {
     if (data.password !== data.confirm_password) {
@@ -105,8 +104,7 @@ const AddUser = () => {
               >
                 <option value="customer">Customer</option>
                 <option value="staff">Sales Staff</option>
-                <option value="owner">Owner</option>
-                <option value="administrator">Store Administrator</option>
+                <option value="admin">Admin</option>
               </select>
             </div>
             <div>

@@ -1,3 +1,4 @@
+import Joi from "joi";
 import { errorHandler, getDateFromDB, mySql } from "./common";
 
 export function getProSub(req, res) {
@@ -22,11 +23,24 @@ export function getProSub(req, res) {
   }
 }
 
+const prosubSchema = Joi.object({
+  name: Joi.string().required(),
+  sub_category_id: Joi.number().integer().required(),
+  sub_category_name: Joi.string().required(),
+});
+
 export async function postProSub(req, res) {
   try {
+    //api validateion;
+    const varify = prosubSchema.validate(req.body);
+    if (varify.error) {
+      errorHandler(res, { message: varify.error.message });
+      return;
+    }
+
     const sql = "INSERT INTO pro_sub_category SET ?";
     mySql.query(sql, req.body, (err, result) => {
-      if (err) throw err;
+      if (err) throw { message: err.sqlMessage };
       else {
         if (result.insertId > 0) {
           res.send({ message: "Pro Sub Category Added Successfully" });
@@ -44,7 +58,7 @@ export function deleteProsub(req, res) {
   try {
     const sql = `DELETE FROM pro_sub_category WHERE id=${req.query.id}`;
     mySql.query(sql, (err) => {
-      if (err) throw err;
+      if (err) throw { message: err.sqlMessage };
       res.send({ message: "Deleted successfully" });
     });
   } catch (error) {
@@ -63,7 +77,7 @@ export async function updatetProsub(req, res) {
 
     const sql = `UPDATE pro_sub_category SET ${data} WHERE id=${req.query.id}`;
     mySql.query(sql, (err, result) => {
-      if (err) throw err;
+      if (err) throw { message: err.sqlMessage };
       else {
         if (result.changedRows > 0) {
           res.send({ message: "Pro Sub Category Updated Successfully" });

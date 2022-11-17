@@ -1,3 +1,4 @@
+import Joi from "joi";
 import {
   bodyParser,
   deleteImage,
@@ -28,6 +29,13 @@ export function getOffer(req, res) {
   }
 }
 
+const OfferSchema = Joi.object({
+  priority: Joi.number().integer().required(),
+  title: Joi.string().required(),
+  product_link: Joi.string().required(),
+  image: Joi.string().required(),
+});
+
 export async function postOffer(req, res) {
   try {
     const img = [{ name: "image", maxCount: 1 }];
@@ -39,9 +47,18 @@ export async function postOffer(req, res) {
 
     req.body.priority = parseInt(req.body.priority);
     req.body.image = req.files.image[0].filename;
+
+    //api validateion;
+    const varify = OfferSchema.validate(req.body);
+    if (varify.error) {
+      deleteImage(req.body.image);
+      errorHandler(res, { message: varify.error.message });
+      return;
+    }
+
     const sql = "INSERT INTO offer SET ?";
     mySql.query(sql, req.body, (err, result) => {
-      if (err) throw err;
+      if (err) throw { message: err.sqlMessage };
       else {
         if (result.insertId > 0) {
           res.send({ message: "Offer Added Successfully" });
@@ -59,7 +76,7 @@ export function deleteOffer(req, res) {
   try {
     const sql = `DELETE FROM offer WHERE id=${req.query.id}`;
     mySql.query(sql, (err) => {
-      if (err) throw err;
+      if (err) throw { message: err.sqlMessage };
       deleteImage(req.query.image);
       res.send({ message: "Deleted successfully" });
     });
@@ -91,7 +108,7 @@ export async function updateOffer(req, res) {
 
     const sql = `UPDATE offer SET ${data} WHERE id=${req.query.id}`;
     mySql.query(sql, (err, result) => {
-      if (err) throw err;
+      if (err) throw { message: err.sqlMessage };
       else {
         if (result.changedRows > 0) {
           if (exist) {

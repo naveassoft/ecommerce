@@ -38,7 +38,7 @@ const AddProsubCategory = () => {
         reset();
       } else throw result;
     } catch (error) {
-      store?.setAlert({ msg: result.message, type: "error" });
+      store?.setAlert({ msg: error.message, type: "error" });
     }
     setLoading(false);
   }

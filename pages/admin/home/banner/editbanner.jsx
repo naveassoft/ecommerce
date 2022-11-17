@@ -69,12 +69,13 @@ const EditBanner = () => {
       data.category_name = category?.find(
         (item) => item.id == data.category_id
       )?.name;
-    }
+    } else delete data.category_id;
     if (data.sub_category_id) {
       data.sub_category_name = subCategory?.find(
         (item) => item.id == data.sub_category_id
       )?.name;
-    }
+    } else delete data.sub_category_id;
+
     const formData = new FormData();
     Object.entries(data).forEach(([key, value]) => {
       if (value) formData.append(key, value);

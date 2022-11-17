@@ -1,10 +1,6 @@
 import { HiMinusCircle, HiPlusCircle } from "react-icons/hi";
-import { AnimatePresence, motion } from "framer-motion";
-import { FaEdit, FaHome, FaTrash } from "react-icons/fa";
 import React, { useEffect, useState } from "react";
-import { menuAnimation } from "../../../../components/admin/components/SidebarMenu";
 import DashboardLayout from "../../../../components/admin/common/DashboardLayout";
-import Link from "next/link";
 import useStore from "../../../../components/context/useStore";
 import {
   DocumentHandler,

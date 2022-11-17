@@ -4,6 +4,7 @@ import { useForm } from "react-hook-form";
 import DashboardLayout from "../../../../components/admin/common/DashboardLayout";
 import Link from "next/link";
 import useStore from "../../../../components/context/useStore";
+import { PageInfo } from "../../../../components/admin/common/common";
 
 const AdBanner = () => {
   const { handleSubmit, register, reset } = useForm();
@@ -44,7 +45,8 @@ const AdBanner = () => {
       data.sub_category_name = subCategory?.find(
         (item) => item.id == data.sub_category_id
       )?.name;
-    }
+    } else delete data.sub_category_id;
+
     const formData = new FormData();
     Object.entries(data).forEach(([key, value]) => {
       formData.append(key, value);
@@ -67,15 +69,7 @@ const AdBanner = () => {
   return (
     <DashboardLayout>
       <section>
-        <div className="page-info">
-          <div className="icon">
-            <FaHome />
-          </div>
-          <div>
-            <h3>Baner Information</h3>
-            <p>Add Baner Information from here</p>
-          </div>
-        </div>
+        <PageInfo title="Baner" type="Add" />
 
         <div className="add-form">
           <form onSubmit={handleSubmit(onsubmit)}>
@@ -127,7 +121,7 @@ const AdBanner = () => {
                 type="submit"
                 className="btn active text-sm"
               >
-                CREATE
+                SAVE
               </button>
               <Link href="/admin/home/banner">
                 <button
@@ -135,15 +129,12 @@ const AdBanner = () => {
                   className="btn text-sm"
                   style={{ backgroundColor: "#dc3545", color: "#fff" }}
                 >
-                  CANCEL
+                  GO BACK
                 </button>
               </Link>
             </div>
           </form>
         </div>
-        <p className="my-7 text-gray-400 text-sm">
-          Copyright © 2022 All Rights Reserved.
-        </p>
       </section>
     </DashboardLayout>
   );

@@ -1,3 +1,4 @@
+import Joi from "joi";
 import {
   bodyParser,
   deleteImage,
@@ -28,6 +29,14 @@ export function getSubcategory(req, res) {
   }
 }
 
+const subCategorySchema = Joi.object({
+  name: Joi.string().required(),
+  category_id: Joi.number().integer().required(),
+  category_name: Joi.string().required(),
+  description: Joi.string().max(500),
+  image: Joi.string().required(),
+});
+
 export async function postSubCategory(req, res) {
   try {
     const img = [{ name: "image", maxCount: 1 }];
@@ -38,9 +47,18 @@ export async function postSubCategory(req, res) {
     }
 
     req.body.image = req.files.image[0].filename;
+
+    //api validateion;
+    const varify = subCategorySchema.validate(req.body);
+    if (varify.error) {
+      deleteImage(req.body.image);
+      errorHandler(res, { message: varify.error.message });
+      return;
+    }
+
     const sql = "INSERT INTO sub_category SET ?";
     mySql.query(sql, req.body, (err, result) => {
-      if (err) throw err;
+      if (err) throw { message: err.sqlMessage };
       else {
         if (result.insertId > 0) {
           res.send({ message: "Category Added Successfully" });
@@ -58,7 +76,7 @@ export function deletesubCategory(req, res) {
   try {
     const sql = `DELETE FROM sub_category WHERE id=${req.query.id}`;
     mySql.query(sql, (err) => {
-      if (err) throw err;
+      if (err) throw { message: err.sqlMessage };
       deleteImage(req.query.image);
       res.send({ message: "Deleted successfully" });
     });
@@ -90,7 +108,7 @@ export async function updateSubtCategory(req, res) {
 
     const sql = `UPDATE sub_category SET ${data} WHERE id=${req.query.id}`;
     mySql.query(sql, (err, result) => {
-      if (err) throw err;
+      if (err) throw { message: err.sqlMessage };
       else {
         if (result.changedRows > 0) {
           if (exist) {

@@ -1,3 +1,4 @@
+import Joi from "joi";
 import { errorHandler, getDateFromDB, mySql } from "./common";
 
 export function getReview(req, res) {
@@ -9,7 +10,24 @@ export function getReview(req, res) {
   getDateFromDB(res, sql, count);
 }
 
+const PostSchema = Joi.object({
+  customer_id: Joi.number().required(),
+  product_id: Joi.number().required(),
+  customer_name: Joi.string().required(),
+  customer_email: Joi.string().email().required(),
+  customer_profile: Joi.string(),
+  comment: Joi.string().required(),
+  rating: Joi.number().max(5),
+});
+
 export async function postReview(req, res) {
+  //api validateion;
+  const varify = PostSchema.validate(req.body);
+  if (varify.error) {
+    errorHandler(res, { message: varify.error.message });
+    return;
+  }
+
   const query = `SELECT id FROM user WHERE id = '${req.body.customer_id}' AND email = '${req.body.customer_email}'`;
   mySql.query(query, (err, result) => {
     if (err) errorHandler(res, { message: err.sqlMessage });
@@ -32,7 +50,17 @@ export async function postReview(req, res) {
   });
 }
 
+const DeleteSchema = Joi.object({
+  customer_id: Joi.number().required(),
+  customer_email: Joi.string().email().required(),
+});
 export function deleteReview(req, res) {
+  //api validateion;
+  const varify = DeleteSchema.validate(req.body);
+  if (varify.error) {
+    errorHandler(res, { message: varify.error.message });
+    return;
+  }
   const query = `SELECT id FROM customer_review WHERE customer_id = '${req.body.customer_id}' AND customer_email = '${req.body.customer_email}'`;
   mySql.query(query, (err, result) => {
     if (err) errorHandler(res, { message: err.sqlMessage });

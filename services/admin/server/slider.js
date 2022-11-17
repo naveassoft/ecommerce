@@ -1,3 +1,4 @@
+import Joi from "joi";
 import {
   bodyParser,
   deleteImage,
@@ -28,6 +29,12 @@ export function getSlider(req, res) {
   }
 }
 
+const sliderSchema = Joi.object({
+  category_id: Joi.number().integer().required(),
+  category_name: Joi.string().required(),
+  image: Joi.string().required(),
+});
+
 export async function postSlider(req, res) {
   try {
     const img = [{ name: "image", maxCount: 1 }];
@@ -38,9 +45,18 @@ export async function postSlider(req, res) {
     }
 
     req.body.image = req.files.image[0].filename;
+
+    //api validateion;
+    const varify = sliderSchema.validate(req.body);
+    if (varify.error) {
+      deleteImage(req.body.image);
+      errorHandler(res, { message: varify.error.message });
+      return;
+    }
+
     const sql = "INSERT INTO slider SET ?";
     mySql.query(sql, req.body, (err, result) => {
-      if (err) throw err;
+      if (err) throw { message: err.sqlMessage };
       else {
         if (result.insertId > 0) {
           res.send({ message: "Slider Added Successfully" });
@@ -58,7 +74,7 @@ export function deleteSlider(req, res) {
   try {
     const sql = `DELETE FROM slider WHERE id=${req.query.id}`;
     mySql.query(sql, (err) => {
-      if (err) throw err;
+      if (err) throw { message: err.sqlMessage };
       deleteImage(req.query.image);
       res.send({ message: "Deleted successfully" });
     });
@@ -90,7 +106,7 @@ export async function updateSlider(req, res) {
 
     const sql = `UPDATE slider SET ${data} WHERE id=${req.query.id}`;
     mySql.query(sql, (err, result) => {
-      if (err) throw err;
+      if (err) throw { message: err.sqlMessage };
       else {
         if (result.changedRows > 0) {
           if (exist) {

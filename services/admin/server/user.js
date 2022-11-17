@@ -1,4 +1,5 @@
 import bcrypt from "bcrypt";
+import Joi from "joi";
 import {
   bodyParser,
   deleteImage,
@@ -32,12 +33,27 @@ export function getUser(req, res) {
   }
 }
 
+const UserSchema = Joi.object({
+  name: Joi.string().max(100).required(),
+  email: Joi.string().email().required(),
+  password: Joi.string().min(6).required(),
+  user_role: Joi.string().valid("uploader", "manager", "admin").required(),
+  profile: Joi.string(),
+});
+
 export async function postUser(req, res) {
   try {
     const img = [{ name: "profile", maxCount: 1 }];
     const { error } = await bodyParser(req, res, "assets", img);
     if (error) {
       throw { message: error.message || "Error occured when image updlading" };
+    }
+
+    //api validateion;
+    const varify = UserSchema.validate(req.body);
+    if (varify.error) {
+      errorHandler(res, { message: varify.error.message });
+      return;
     }
 
     //check is user exist;

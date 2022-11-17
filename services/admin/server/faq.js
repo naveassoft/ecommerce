@@ -1,3 +1,4 @@
+import Joi from "joi";
 import { errorHandler, getDateFromDB, mySql } from "./common";
 
 export function getFaq(req, res) {
@@ -22,11 +23,23 @@ export function getFaq(req, res) {
   }
 }
 
+const FaqSchema = Joi.object({
+  question: Joi.string().max(400).required(),
+  answer: Joi.string().max(600).required(),
+});
+
 export async function postFaq(req, res) {
   try {
+    //api validateion;
+    const varify = FaqSchema.validate(req.body);
+    if (varify.error) {
+      errorHandler(res, { message: varify.error.message });
+      return;
+    }
+
     const sql = "INSERT INTO faq SET ?";
     mySql.query(sql, req.body, (err, result) => {
-      if (err) throw err;
+      if (err) throw { message: err.sqlMessage };
       else {
         if (result.insertId > 0) {
           res.send({ message: "Faq Added Successfully" });
@@ -44,7 +57,7 @@ export function deleteFaq(req, res) {
   try {
     const sql = `DELETE FROM faq WHERE id=${req.query.id}`;
     mySql.query(sql, (err) => {
-      if (err) throw err;
+      if (err) throw { message: err.sqlMessage };
       res.send({ message: "Deleted successfully" });
     });
   } catch (error) {
@@ -64,7 +77,7 @@ export async function updateFaq(req, res) {
 
     const sql = `UPDATE faq SET ${data} WHERE id=${req.query.id}`;
     mySql.query(sql, (err, result) => {
-      if (err) throw err;
+      if (err) throw { message: err.sqlMessage };
       else {
         if (result.changedRows > 0) {
           res.send({ message: "Faq Updated Successfully" });
