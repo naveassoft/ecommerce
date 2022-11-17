@@ -1,3 +1,4 @@
+import Joi from "joi";
 import {
   bodyParser,
   deleteImage,
@@ -48,6 +49,33 @@ export function getProduct(req, res) {
   }
 }
 
+const ProductSchema = Joi.object({
+  created_by: Joi.number().integer().required(),
+  created_at: Joi.date().required(),
+  name: Joi.string().required(),
+  brand: Joi.string().required(),
+  sku: Joi.string().required(),
+  price: Joi.number().required(),
+  prev_price: Joi.number(),
+  tax: Joi.number(),
+  stock: Joi.number().required(),
+  keyword: Joi.string().required(),
+  category_id: Joi.number().integer().required(),
+  category_name: Joi.string().required(),
+  sub_category_id: Joi.number().integer(),
+  sub_category_name: Joi.string(),
+  pro_sub_id: Joi.number().integer(),
+  pro_sub_name: Joi.string(),
+  short_description: Joi.string().required(),
+  description: Joi.string().required(),
+  main_image: Joi.string().required(),
+  features_img: Joi.string().required(),
+  type: Joi.string().valid("single", "package").required(),
+  colour: Joi.string(),
+  size: Joi.string(),
+  unit: Joi.string().valid("piece", "kg"),
+});
+
 export async function postProduct(req, res) {
   try {
     const img = [
@@ -57,43 +85,35 @@ export async function postProduct(req, res) {
 
     const { error } = await bodyParser(req, res, "assets", img);
     if (error || !req.files.main_image || !req.files.features_img) {
-      throw { message: "Error occured when image updlading" };
+      return resError(req, res, "Error occured when image updlading");
     }
+    req.body.created_at = new Date();
+    req.body.main_image = req.files.main_image[0].filename;
+    const features_img = [];
+    req.files.features_img.forEach((img) => {
+      features_img.push(img.filename);
+    });
+    req.body.features_img = JSON.stringify(features_img);
+
+    //api validateion;
+    const varify = ProductSchema.validate(req.body);
+    if (varify.error) return resError(req, res, varify.error.message);
 
     //check sku is exist;
     const query = `SELECT * FROM product WHERE sku = '${req.body.sku}'`;
     mySql.query(query, (err, result) => {
-      if (err) {
-        //if err occured;
-        deleteImage(req.files.main_image[0].filename);
-        req.files.features_img.forEach((img) => {
-          deleteImage(img.filename);
-        });
-        return errorHandler(res, {
-          message: err.sqlMessage,
-        }); //till;
-      } else if (result.length) {
-        //if product already exist;
-        deleteImage(req.files.main_image[0].filename);
-        req.files.features_img.forEach((img) => {
-          deleteImage(img.filename);
-        });
-        return errorHandler(res, {
-          message: "Already This SKU added, Try with different SKU",
-        }); //till;
+      if (err) return resError(req, res, err.sqlMessage);
+      else if (result.length) {
+        return resError(
+          req,
+          res,
+          "Already this SKU added, try with different SKU"
+        );
       } else {
         //procced to uploading product;
-        req.body.created_at = new Date();
-        req.body.main_image = req.files.main_image[0].filename;
-        const features_img = [];
-        req.files.features_img.forEach((img) => {
-          features_img.push(img.filename);
-        });
-        req.body.features_img = JSON.stringify(features_img);
-
         const sql = "INSERT INTO product SET ?";
         mySql.query(sql, req.body, (err, result) => {
-          if (err) return errorHandler(res, { message: err.sqlMessage });
+          if (err) return resError(req, res, err.sqlMessage);
           else {
             if (result.insertId > 0) {
               res.send({ message: "Product Added Successfully" });
@@ -105,7 +125,7 @@ export async function postProduct(req, res) {
       }
     });
   } catch (error) {
-    errorHandler(res, error);
+    resError(req, res, error.message);
   }
 }
 
@@ -197,4 +217,12 @@ export async function updateProduct(req, res) {
   } catch (error) {
     errorHandler(res, error);
   }
+}
+
+function resError(req, res, message) {
+  deleteImage(req.files.main_image[0].filename);
+  req.files.features_img.forEach((img) => {
+    deleteImage(img.filename);
+  });
+  errorHandler(res, { message });
 }

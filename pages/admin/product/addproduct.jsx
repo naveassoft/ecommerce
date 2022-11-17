@@ -69,7 +69,7 @@ const AddProduct = () => {
         type: "info",
       });
     }
-    setLoading(true);
+    // setLoading(true);
     //find the category, sub category and pro sub name base on their ids;
     data.category_name = category?.find(
       (item) => item.id == data.category_id
@@ -83,19 +83,21 @@ const AddProduct = () => {
       data.pro_sub_name = prosub?.find(
         (item) => item.id == data.pro_sub_id
       )?.name;
-    } //till;
+    }
 
     data.description = description.current?.value;
     data.main_image = data.main_image[0];
     data.created_by = 2;
     const formData = new FormData();
     Object.entries(data).forEach(([key, value]) => {
-      if (key !== "features_img") {
-        formData.append(key, value);
-      } else {
-        Array.from(value).forEach((img) => {
-          formData.append("features_img", img);
-        });
+      if (value) {
+        if (key !== "features_img") {
+          formData.append(key, value);
+        } else {
+          Array.from(value).forEach((img) => {
+            formData.append("features_img", img);
+          });
+        }
       }
     });
 
@@ -111,7 +113,7 @@ const AddProduct = () => {
     } else {
       store?.setAlert({ msg: message, type: "error" });
     }
-    setLoading(false);
+    // setLoading(false);
   } //till;
 
   const inputs = [
@@ -147,7 +149,7 @@ const AddProduct = () => {
     },
     {
       name: "tax",
-      label: "Tax",
+      label: "Tax (%)",
       type: "number",
       required: false,
     },
@@ -187,6 +189,22 @@ const AddProduct = () => {
               />
             </div>
             <div>
+              <label>Product size</label>
+              <input
+                {...register("size")}
+                type="text"
+                placeholder="Give input like a | b | c"
+              />
+            </div>
+            <div>
+              <label>Colour variant</label>
+              <input
+                {...register("size")}
+                type="text"
+                placeholder="Give input like a | b | c"
+              />
+            </div>
+            <div>
               <label>Product Category</label>
               <select
                 {...register("category_id", { required: true })}
@@ -221,6 +239,7 @@ const AddProduct = () => {
                   ))}
               </select>
             </div>
+
             <div>
               <label>Product Pro Sub Category</label>
               <select
@@ -235,6 +254,31 @@ const AddProduct = () => {
                       {item.name}
                     </option>
                   ))}
+              </select>
+            </div>
+
+            <div>
+              <label>Product type</label>
+              <select
+                {...register("type", { required: true })}
+                className="w-full"
+                required
+              >
+                <option value="">select</option>
+                <option value="single">Single</option>
+                <option value="package">Package</option>
+              </select>
+            </div>
+            <div>
+              <label>Product Unit</label>
+              <select
+                {...register("unit", { required: true })}
+                className="w-full"
+                required
+              >
+                <option value="">select</option>
+                <option value="piece">Piece</option>
+                <option value="kg">KG</option>
               </select>
             </div>
 
@@ -279,7 +323,7 @@ const AddProduct = () => {
                 type="submit"
                 className="btn active text-sm"
               >
-                UPDATE
+                SAVE
               </button>
               <Link href="/admin/product">
                 <button

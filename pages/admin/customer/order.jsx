@@ -37,17 +37,17 @@ const reducer = (state, action) => {
 };
 
 const DOrder = () => {
-  const [state, dispatch] = useReducer(reducer, initialState);
-  const [showAction, setShowAction] = useState(-1);
-  const { handleSubmit, register } = useForm();
-  const [loading, setLoading] = useState(false);
-  const [update, setUpdate] = useState(false);
-  const [filtered, setfiltered] = useState("");
-  const [orders, setOrders] = useState(null);
-  const [limit, setLimit] = useState(5);
-  const [count, setCount] = useState(0);
-  const [page, setPage] = useState(0);
-  const store = useStore();
+  const [state, dispatch] = useReducer(reducer, initialState),
+    [showAction, setShowAction] = useState(-1),
+    { handleSubmit, register } = useForm(),
+    [loading, setLoading] = useState(false),
+    [update, setUpdate] = useState(false),
+    [filtered, setfiltered] = useState(""),
+    [orders, setOrders] = useState(null),
+    [limit, setLimit] = useState(5),
+    [count, setCount] = useState(0),
+    [page, setPage] = useState(0),
+    store = useStore();
 
   //handle view and delete action button;
   function handleAction(i) {

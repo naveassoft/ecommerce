@@ -98,7 +98,7 @@ const OrderSchema = Joi.object({
   customer_email: Joi.string().email().required(),
   shipping_address: Joi.string().required(),
   customer_comment: Joi.string(),
-  customer_phone: Joi.string().required(),
+  customer_number: Joi.string().required(),
   status: Joi.string().valid("processing", "shipping", "delivered", "canceled"),
   delivery_date: Joi.date().required(),
   payment_method: Joi.string().valid("cash on delivery", "online payment"),
@@ -121,7 +121,7 @@ export async function postOrder(req, res) {
   }
 
   //check user is exist to db;
-  const query_1 = `SELECT id FROM user WHERE id = '${req.body.customer_id}' AND email = '${req.body.customer_email}'`;
+  const query_1 = `SELECT id number FROM user WHERE id = '${req.body.customer_id}' AND email = '${req.body.customer_email}'`;
   mySql.query(query_1, (err, result) => {
     if (err) errorHandler(res, { message: err.sqlMessage });
     else {
@@ -129,8 +129,15 @@ export async function postOrder(req, res) {
       if (!result.length) {
         res.status(403).send({ message: "Unknown user" });
       } else {
-        //user esist  all done, go ahead;
+        //update user profile if not update
+        if (result[0].number !== req.body.customer_number) {
+          const query_2 = `UPDATE user SET number = '${req.body.customer_number}', address = '${req.body.shipping_address}'  WHERE id = '${req.body.customer_id}'`;
+          mySql.query(query_2, (err) => {
+            if (err) console.log(err);
+          });
+        }
 
+        //user esist  all done, go ahead;
         const product = req.body.product_info;
         const errors = [];
 
@@ -173,6 +180,12 @@ export async function postOrder(req, res) {
                     if (err) errorHandler(res, { message: err.sqlMessage });
                     else {
                       if (order.insertId > 0) {
+                        JSON.parse(req.body.product_info).forEach((product) => {
+                          const query_5 = `UPDATE product SET stock = stock - ${product.quantity} WHERE id= ${product.product_id}`;
+                          mySql.query(query_5, (err) => {
+                            if (err) console.log(err);
+                          });
+                        });
                         res.send({
                           message: "Order Created Successfully",
                         });
@@ -193,14 +206,6 @@ export async function postOrder(req, res) {
   });
 }
 
-export function deleteOrder(req, res) {
-  const sql = `DELETE FROM orders WHERE id=${req.query.id}`;
-  mySql.query(sql, (err) => {
-    if (err) return errorHandler(res, { message: err.sqlMessage });
-    res.send({ message: "Deleted successfully" });
-  });
-}
-
 export async function updateOrder(req, res) {
   if (req.body.order_status === "delivered") {
     return errorHandler(res, {
@@ -218,8 +223,28 @@ export async function updateOrder(req, res) {
       const status = req.body.status;
       const orderStatus = req.body.order_status;
 
-      //update user;
-      if (status === "delivered") {
+      if (orderStatus === "canceled" && status !== "canceled") {
+        JSON.parse(req.body.products).forEach((product, i, arr) => {
+          const query = `UPDATE product SET stock = stock - ${product.quantity} WHERE id= ${product.product_id}`;
+          mySql.query(query, (err) => {
+            if (err) console.log(err);
+            //at end of the loop;
+            if (arr.length - 1 === i) {
+              //update user;
+              if (status === "delivered") {
+                const query = `UPDATE user SET order_placed = order_placed + ${1} WHERE id= ${
+                  req.body.customer_id
+                }`;
+                mySql.query(query, (err) => {
+                  if (err) console.log(err);
+                  res.send({ message: "Order Updated Successfully" });
+                });
+              } else res.send({ message: "Order Updated Successfully" });
+            }
+          });
+        });
+      } else if (status === "delivered") {
+        //update user;
         const query = `UPDATE user SET order_placed = order_placed + ${1} WHERE id= ${
           req.body.customer_id
         }`;
@@ -227,29 +252,25 @@ export async function updateOrder(req, res) {
           if (err) console.log(err);
           res.send({ message: "Order Updated Successfully" });
         });
-      }
-
-      //update product;
-      if (/processing|delivered/.test(status)) {
-        return res.send({ message: "Order Updated Successfully" });
-      }
-      JSON.parse(req.body.products).forEach((product, i, arr) => {
-        let query = "";
-        if (status === "shipping") {
-          query = `UPDATE product SET stock = stock - ${product.quantity} WHERE id= ${product.product_id}`;
-        } else if (orderStatus === "shipping" && status === "canceled") {
-          query = `UPDATE product SET stock = stock + ${product.quantity} WHERE id= ${product.product_id}`;
-        }
-        if (!query) {
-          return res.send({ message: "Order Updated Successfully" });
-        }
-        mySql.query(query, (err) => {
-          if (err) console.log(err);
-          if (arr.length - 1 === i) {
-            res.send({ message: "Order Updated Successfully" });
-          }
+      } else if (status === "canceled") {
+        JSON.parse(req.body.products).forEach((product, i, arr) => {
+          const query = `UPDATE product SET stock = stock + ${product.quantity} WHERE id= ${product.product_id}`;
+          mySql.query(query, (err) => {
+            if (err) console.log(err);
+            if (arr.length - 1 === i) {
+              res.send({ message: "Order Updated Successfully" });
+            }
+          });
         });
-      }); //till;
+      }
     }
+  });
+}
+
+export function deleteOrder(req, res) {
+  const sql = `DELETE FROM orders WHERE id=${req.query.id}`;
+  mySql.query(sql, (err) => {
+    if (err) return errorHandler(res, { message: err.sqlMessage });
+    res.send({ message: "Deleted successfully" });
   });
 }

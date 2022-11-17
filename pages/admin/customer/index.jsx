@@ -59,6 +59,7 @@ const AllCustomer = () => {
                 <th>ID</th>
                 <th>NAME</th>
                 <th>EMAIL</th>
+                <th>NUMBER</th>
                 <th>JOIN</th>
               </tr>
             </thead>
@@ -82,12 +83,13 @@ const AllCustomer = () => {
                       </td>
                       <td>{item.name}</td>
                       <td>{item.email}</td>
+                      <td>{item.number}</td>
                       <td>{item.joined_at.slice(0, 10)}</td>
                     </tr>
                   </React.Fragment>
                 ))
               ) : (
-                <NoDataFount colSpan={4} />
+                <NoDataFount colSpan={5} />
               )}
             </tbody>
           </table>
