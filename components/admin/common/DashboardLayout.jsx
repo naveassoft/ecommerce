@@ -54,21 +54,21 @@ const DashboardLayout = ({ children }) => {
           </div>
         </div>
         <section className="menus-wrapper">
-          {store.user && store.user.user_role !== "owner" ? (
-            <Menus
-              isOpen={isOpen}
-              menus={vendorMenu}
-              setIsOpen={setIsOpen}
-              showAnimation={showAnimation}
-            />
-          ) : (
+          {store.user && store.user.user_role === "owner" ? (
             <Menus
               isOpen={isOpen}
               menus={menus}
               setIsOpen={setIsOpen}
               showAnimation={showAnimation}
             />
-          )}
+          ) : store.user && /vendor|staff/.test(store.user.user_role) ? (
+            <Menus
+              isOpen={isOpen}
+              menus={vendorMenu}
+              setIsOpen={setIsOpen}
+              showAnimation={showAnimation}
+            />
+          ) : null}
           <div
             onClick={() => window.location.reload()}
             className="link ml-[3px]"

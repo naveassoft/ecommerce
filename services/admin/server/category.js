@@ -5,6 +5,7 @@ import {
   errorHandler,
   getDateFromDB,
   mySql,
+  varifyUser,
 } from "./common";
 
 export function getCategory(req, res) {
@@ -44,76 +45,98 @@ export async function postCategory(req, res) {
     if (error || !req.files.image) {
       throw { message: "Error occured when image updlading" };
     }
-
-    req.body.priority = parseInt(req.body.priority);
-    req.body.image = req.files.image[0].filename;
-
-    //api validateion;
-    const varify = CategorySchema.validate(req.body);
-    if (varify.error) {
-      deleteImage(req.body.image);
-      errorHandler(res, { message: varify.error.message });
-      return;
+    if (!req.body.user_id) {
+      return errorHandler(res, { message: "Forbiden", status: 403 });
     }
+    function addC() {
+      req.body.priority = parseInt(req.body.priority);
+      req.body.image = req.files.image[0].filename;
+      delete req.body.user_id;
 
-    const sql = "INSERT INTO category SET ?";
-    mySql.query(sql, req.body, (err, result) => {
-      if (err) throw { message: err.sqlMessage };
-      else {
-        if (result.insertId > 0) {
-          res.send({ message: "Category Added Successfully" });
-        } else {
-          res.send({ message: "Unable to Added, please try again" });
-        }
+      //api validateion;
+      const varify = CategorySchema.validate(req.body);
+      if (varify.error) {
+        deleteImage(req.body.image);
+        errorHandler(res, { message: varify.error.message });
+        return;
       }
-    });
+
+      const sql = "INSERT INTO category SET ?";
+      mySql.query(sql, req.body, (err, result) => {
+        if (err) throw { message: err.sqlMessage };
+        else {
+          if (result.insertId > 0) {
+            res.send({ message: "Category Added Successfully" });
+          } else {
+            res.send({ message: "Unable to Added, please try again" });
+          }
+        }
+      });
+    }
+    varifyUser(res, req.body.user_id, addC);
   } catch (error) {
     errorHandler(res, error);
   }
 }
 
-export function deleteCategory(req, res) {
+export async function deleteCategory(req, res) {
+  const { error } = await bodyParser(req, res, "", []);
+  if (error) {
+    return errorHandler(res, { message: "Error occured when parsing body" });
+  }
+  if (!req.body.user_id) {
+    return errorHandler(res, { message: "Forbiden", status: 403 });
+  }
   //delete category;
-  const categoryQuery = `DELETE FROM category WHERE id=${req.query.id}`;
-  mySql.query(categoryQuery, (err) => {
-    if (err) return errorHandler(res, { message: err.sqlMessage });
-    deleteImage(req.query.image);
+  function deleteC() {
+    const categoryQuery = `DELETE FROM category WHERE id=${req.body.id}`;
+    mySql.query(categoryQuery, (err) => {
+      if (err) return errorHandler(res, { message: err.sqlMessage });
+      deleteImage(req.body.image);
 
-    //find sub category under this categroy;
-    const subgettingq = `SELECT id, image FROM sub_category WHERE category_id=${req.query.id}`;
-    mySql.query(subgettingq, (err, result) => {
-      if (err) console.log(err);
-      const subId = [],
-        imges = [];
-      if (result.length) {
-        result.forEach((item) => {
-          subId.push(item.id);
-          imges.push(item.image);
-        });
-      }
-      if (subId.length) {
-        //delete sub category under this category;
-        const subyQuery = `DELETE FROM sub_category WHERE category_id=${req.query.id}`;
-        mySql.query(subyQuery, (err) => {
-          if (err) {
-            return errorHandler(res, { message: "Cannot delete sub category" });
-          }
-          imges.forEach((img) => deleteImage(img));
-          // delete pro sub category under those sub category;
-          const prosub = `DELETE FROM pro_sub_category WHERE sub_category_id IN(${subId.join(
-            ","
-          )})`;
-          mySql.query(prosub, (err, result) => {
-            if (err)
+      //find sub category under this categroy;
+      const subgettingq = `SELECT id, image FROM sub_category WHERE category_id=${req.body.id}`;
+      mySql.query(subgettingq, (err, result) => {
+        if (err) {
+          return errorHandler(res, {
+            message: "Cannot delete sub category",
+          });
+        }
+        const subId = [],
+          imges = [];
+        if (result.length) {
+          result.forEach((item) => {
+            subId.push(item.id);
+            imges.push(item.image);
+          });
+        }
+        if (subId.length) {
+          //delete sub category under this category;
+          const subyQuery = `DELETE FROM sub_category WHERE category_id=${req.body.id}`;
+          mySql.query(subyQuery, (err) => {
+            if (err) {
               return errorHandler(res, {
-                message: "Cannot delete pro sub category",
+                message: "Cannot delete sub category",
               });
-            res.send({ message: "Deleted successfully" });
-          }); //till;
-        });
-      }
+            }
+            imges.forEach((img) => deleteImage(img));
+            // delete pro sub category under those sub category;
+            const prosub = `DELETE FROM pro_sub_category WHERE sub_category_id IN(${subId.join(
+              ","
+            )})`;
+            mySql.query(prosub, (err, result) => {
+              if (err)
+                return errorHandler(res, {
+                  message: "Cannot delete pro sub category",
+                });
+              res.send({ message: "Deleted successfully" });
+            }); //till;
+          });
+        } else res.send({ message: "Deleted successfully" });
+      });
     });
-  });
+  }
+  varifyUser(res, req.body.user_id, deleteC);
 }
 
 export async function updatetCategory(req, res) {
@@ -121,37 +144,42 @@ export async function updatetCategory(req, res) {
     const img = [{ name: "image", maxCount: 1 }];
     const { error } = await bodyParser(req, res, "assets", img);
     if (error) throw { message: "Error occured when image updlading" };
-
-    let exist;
-    if (req.files.image) {
-      req.body.image = req.files.image[0].filename;
-      exist = req.body.existimage;
-      delete req.body.existimage;
+    if (!req.body.user_id) {
+      return errorHandler(res, { message: "Forbiden", status: 403 });
     }
-    let data = "";
-    Object.entries(req.body).forEach(([key, value]) => {
-      if (value) {
-        if (data) {
-          data += `, ${key} = '${value}'`;
-        } else data += `${key} = '${value}'`;
+    function update() {
+      delete req.body.user_id;
+      let exist;
+      if (req.files.image) {
+        req.body.image = req.files.image[0].filename;
+        exist = req.body.existimage;
+        delete req.body.existimage;
       }
-    });
-
-    const sql = `UPDATE category SET ${data} WHERE id=${req.query.id}`;
-    mySql.query(sql, (err, result) => {
-      if (err) throw { message: err.sqlMessage };
-      else {
-        console.log(result);
-        if (result.changedRows > 0) {
-          if (exist) {
-            deleteImage(exist);
-          }
-          res.send({ message: "Category Updated Successfully" });
-        } else {
-          res.send({ message: "Unable to Update, please try again" });
+      let data = "";
+      Object.entries(req.body).forEach(([key, value]) => {
+        if (value) {
+          if (data) {
+            data += `, ${key} = '${value}'`;
+          } else data += `${key} = '${value}'`;
         }
-      }
-    });
+      });
+
+      const sql = `UPDATE category SET ${data} WHERE id=${req.query.id}`;
+      mySql.query(sql, (err, result) => {
+        if (err) return errorHandler(res, { message: err.sqlMessage });
+        else {
+          if (result.changedRows > 0) {
+            if (exist) {
+              deleteImage(exist);
+            }
+            res.send({ message: "Category Updated Successfully" });
+          } else {
+            res.send({ message: "Unable to Update, please try again" });
+          }
+        }
+      });
+    }
+    varifyUser(res, req.body.user_id, update);
   } catch (error) {
     errorHandler(res, error);
   }

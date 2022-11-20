@@ -12,7 +12,10 @@ const AdCategory = () => {
 
   async function onsubmit(data) {
     setLoading(true);
+    if (!store.user) return;
+
     data.image = data.image[0];
+    data.user_id = store.user.id;
     const formData = new FormData();
     Object.entries(data).forEach(([key, value]) => {
       formData.append(key, value);

@@ -20,6 +20,17 @@ export const mailer = nodemailer.createTransport({
   },
 });
 
+export function varifyUser(res, user_id, callback) {
+  const sql = `SELECT id, user_role FROM user WHERE id = '${user_id}'`;
+  mySql.query(sql, (err, result) => {
+    if (err) return errorHandler(res, { message: err.sqlMessage });
+    if (!result.length || result[0].user_role !== "owner") {
+      return errorHandler(res, { message: "Forbidden" });
+    }
+    callback();
+  });
+}
+
 export function getDateFromDB(res, query, count = undefined) {
   return mySql.query(query, (err, data) => {
     if (err) return errorHandler(res, { message: err.sqlMessage });
