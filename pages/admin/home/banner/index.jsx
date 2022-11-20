@@ -46,10 +46,13 @@ const DBanner = () => {
   }, [update, limit, page]);
 
   async function deleteBanner(id, image) {
+    if (!store.user) return;
     setLoading(true);
-    const { error, message } = await store?.deleteData(
-      `/api/banner?id=${id}&image=${image}`
-    );
+    const formData = new FormData();
+    formData.append("user_id", store.user.id);
+    formData.append("id", id);
+    formData.append("image", image);
+    const { error, message } = await store?.deleteData(`/api/banner`, formData);
     if (!error) {
       store?.setAlert({ msg: message, type: "success" });
       setUpdate((prev) => !prev);

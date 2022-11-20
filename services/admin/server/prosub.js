@@ -1,5 +1,5 @@
 import Joi from "joi";
-import { errorHandler, getDateFromDB, mySql } from "./common";
+import { errorHandler, getDateFromDB, mySql, varifyOwner } from "./common";
 
 export function getProSub(req, res) {
   try {
@@ -31,24 +31,32 @@ const prosubSchema = Joi.object({
 
 export async function postProSub(req, res) {
   try {
-    //api validateion;
-    const varify = prosubSchema.validate(req.body);
-    if (varify.error) {
-      errorHandler(res, { message: varify.error.message });
-      return;
+    if (!req.body.user_id) {
+      return errorHandler(res, { message: "Forbiden", status: 403 });
     }
 
-    const sql = "INSERT INTO pro_sub_category SET ?";
-    mySql.query(sql, req.body, (err, result) => {
-      if (err) throw { message: err.sqlMessage };
-      else {
-        if (result.insertId > 0) {
-          res.send({ message: "Pro Sub Category Added Successfully" });
-        } else {
-          res.send({ message: "Unable to Added, please try again" });
-        }
+    function post() {
+      delete req.body.user_id;
+      //api validateion;
+      const varify = prosubSchema.validate(req.body);
+      if (varify.error) {
+        errorHandler(res, { message: varify.error.message });
+        return;
       }
-    });
+
+      const sql = "INSERT INTO pro_sub_category SET ?";
+      mySql.query(sql, req.body, (err, result) => {
+        if (err) return errorHandler(res, { message: err.sqlMessage });
+        else {
+          if (result.insertId > 0) {
+            res.send({ message: "Pro Sub Category Added Successfully" });
+          } else {
+            res.send({ message: "Unable to Added, please try again" });
+          }
+        }
+      });
+    }
+    varifyOwner(res, req.body.user_id, post);
   } catch (error) {
     errorHandler(res, error);
   }
@@ -56,10 +64,16 @@ export async function postProSub(req, res) {
 
 export function deleteProsub(req, res) {
   try {
-    const sql = `DELETE FROM pro_sub_category WHERE id=${req.query.id}`;
-    mySql.query(sql, (err) => {
-      if (err) throw { message: err.sqlMessage };
-      res.send({ message: "Deleted successfully" });
+    if (!req.body.user_id) {
+      return errorHandler(res, { message: "Forbiden", status: 403 });
+    }
+
+    varifyOwner(res, req.body.user_id, () => {
+      const sql = `DELETE FROM pro_sub_category WHERE id=${req.body.id}`;
+      mySql.query(sql, (err) => {
+        if (err) return errorHandler(res, { message: err.sqlMessage });
+        res.send({ message: "Deleted successfully" });
+      });
     });
   } catch (error) {
     errorHandler(res, error);
@@ -68,24 +82,32 @@ export function deleteProsub(req, res) {
 
 export async function updatetProsub(req, res) {
   try {
-    let data = "";
-    Object.entries(req.body).forEach(([key, value]) => {
-      if (data) {
-        data += `, ${key} = '${value}'`;
-      } else data += `${key} = '${value}'`;
-    });
+    if (!req.body.user_id) {
+      return errorHandler(res, { message: "Forbiden", status: 403 });
+    }
 
-    const sql = `UPDATE pro_sub_category SET ${data} WHERE id=${req.query.id}`;
-    mySql.query(sql, (err, result) => {
-      if (err) throw { message: err.sqlMessage };
-      else {
-        if (result.changedRows > 0) {
-          res.send({ message: "Pro Sub Category Updated Successfully" });
-        } else {
-          res.send({ message: "Unable to Update, please try again" });
+    function edit() {
+      delete req.body.user_id;
+      let data = "";
+      Object.entries(req.body).forEach(([key, value]) => {
+        if (data) {
+          data += `, ${key} = '${value}'`;
+        } else data += `${key} = '${value}'`;
+      });
+
+      const sql = `UPDATE pro_sub_category SET ${data} WHERE id=${req.query.id}`;
+      mySql.query(sql, (err, result) => {
+        if (err) return errorHandler(res, { message: err.sqlMessage });
+        else {
+          if (result.changedRows > 0) {
+            res.send({ message: "Pro Sub Category Updated Successfully" });
+          } else {
+            res.send({ message: "Unable to Update, please try again" });
+          }
         }
-      }
-    });
+      });
+    }
+    varifyOwner(res, req.body.user_id, edit);
   } catch (error) {
     errorHandler(res, error);
   }

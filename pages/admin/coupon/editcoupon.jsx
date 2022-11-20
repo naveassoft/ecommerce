@@ -35,6 +35,7 @@ const EditCuppon = () => {
     Object.entries(data).forEach(([key, value]) => {
       if (!value) delete data[key];
     });
+    data.user_id = store.user.id;
     //save data;
     try {
       const res = await fetch(`/api/coupon?id=${coupon?.id}`, {

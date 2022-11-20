@@ -18,8 +18,10 @@ const AddFaq = () => {
   const store = useStore();
 
   async function onsubmit(e) {
+    if (!store.user) return;
     e.preventDefault();
     const data = {};
+    data.user_id = store.user.id;
     data.question = question.current?.value;
     data.answer = answer.current?.value;
     if (!data.answer) {

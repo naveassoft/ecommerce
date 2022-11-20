@@ -43,7 +43,10 @@ const UpdateTerms = () => {
         headers: {
           "content-type": "application/json",
         },
-        body: JSON.stringify({ description: description.current?.value }),
+        body: JSON.stringify({
+          description: description.current?.value,
+          user_id: store.user.id,
+        }),
       });
       const result = await res.json();
       if (res.ok) {

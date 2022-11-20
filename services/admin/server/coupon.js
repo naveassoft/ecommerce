@@ -1,5 +1,5 @@
 import Joi from "joi";
-import { errorHandler, getDateFromDB, mySql } from "./common";
+import { errorHandler, getDateFromDB, mySql, varifyUser } from "./common";
 
 export function getCoupon(req, res) {
   try {
@@ -31,28 +31,34 @@ const CouponSchema = Joi.object({
 
 export async function postCoupon(req, res) {
   try {
-    //api validateion;
-    const varify = CouponSchema.validate(req.body);
-    if (varify.error) {
-      errorHandler(res, { message: varify.error.message });
-      return;
+    if (!req.body.user_id) {
+      return errorHandler(res, { message: "Forbiden", status: 403 });
     }
-    const query = `SELECT id FROM coupon WHERE code = '${req.body.code}'`;
-    mySql.query(query, (err, result) => {
-      if (err) throw { message: err.sqlMessage };
-      if (result.length) {
-        return res.status(403).send({ message: "Already exist" });
+    varifyUser(res, req.body.user_id, () => {
+      delete req.body.user_id;
+      //api validateion;
+      const varify = CouponSchema.validate(req.body);
+      if (varify.error) {
+        errorHandler(res, { message: varify.error.message });
+        return;
       }
-      const sql = "INSERT INTO coupon SET ?";
-      mySql.query(sql, req.body, (err, result) => {
-        if (err) throw { message: err.sqlMessage };
-        else {
-          if (result.insertId > 0) {
-            res.send({ message: "Coupon Added Successfully" });
-          } else {
-            res.send({ message: "Unable to Added, please try again" });
-          }
+      const query = `SELECT id FROM coupon WHERE code = '${req.body.code}'`;
+      mySql.query(query, (err, result) => {
+        if (err) return errorHandler(res, { message: err.sqlMessage });
+        if (result.length) {
+          return res.status(403).send({ message: "Already exist" });
         }
+        const sql = "INSERT INTO coupon SET ?";
+        mySql.query(sql, req.body, (err, result) => {
+          if (err) return errorHandler(res, { message: err.sqlMessage });
+          else {
+            if (result.insertId > 0) {
+              res.send({ message: "Coupon Added Successfully" });
+            } else {
+              res.send({ message: "Unable to Added, please try again" });
+            }
+          }
+        });
       });
     });
   } catch (error) {
@@ -62,10 +68,17 @@ export async function postCoupon(req, res) {
 
 export function deleteCoupon(req, res) {
   try {
-    const sql = `DELETE FROM coupon WHERE id=${req.query.id}`;
-    mySql.query(sql, (err) => {
-      if (err) throw { message: err.sqlMessage };
-      res.send({ message: "Deleted successfully" });
+    if (!req.query.user) {
+      return errorHandler(res, { message: "Forbiden", status: 403 });
+    }
+
+    varifyUser(res, req.query.user, () => {
+      delete req.query.user;
+      const sql = `DELETE FROM coupon WHERE id=${req.query.id}`;
+      mySql.query(sql, (err) => {
+        if (err) return errorHandler(res, { message: err.sqlMessage });
+        res.send({ message: "Deleted successfully" });
+      });
     });
   } catch (error) {
     errorHandler(res, error);
@@ -74,23 +87,30 @@ export function deleteCoupon(req, res) {
 
 export async function updateCoupon(req, res) {
   try {
-    let data = "";
-    Object.entries(req.body).forEach(([key, value]) => {
-      if (data) {
-        data += `, ${key} = '${value}'`;
-      } else data += `${key} = '${value}'`;
-    });
+    if (!req.body.user_id) {
+      return errorHandler(res, { message: "Forbiden", status: 403 });
+    }
 
-    const sql = `UPDATE coupon SET ${data} WHERE id=${req.query.id}`;
-    mySql.query(sql, (err, result) => {
-      if (err) throw { message: err.sqlMessage };
-      else {
-        if (result.changedRows > 0) {
-          res.send({ message: "Coupon Updated Successfully" });
-        } else {
-          res.send({ message: "Unable to Update, please try again" });
+    varifyUser(res, req.body.user_id, () => {
+      delete req.body.user_id;
+      let data = "";
+      Object.entries(req.body).forEach(([key, value]) => {
+        if (data) {
+          data += `, ${key} = '${value}'`;
+        } else data += `${key} = '${value}'`;
+      });
+
+      const sql = `UPDATE coupon SET ${data} WHERE id=${req.query.id}`;
+      mySql.query(sql, (err, result) => {
+        if (err) throw { message: err.sqlMessage };
+        else {
+          if (result.changedRows > 0) {
+            res.send({ message: "Coupon Updated Successfully" });
+          } else {
+            res.send({ message: "Unable to Update, please try again" });
+          }
         }
-      }
+      });
     });
   } catch (error) {
     errorHandler(res, error);

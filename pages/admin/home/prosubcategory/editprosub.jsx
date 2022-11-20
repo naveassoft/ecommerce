@@ -39,7 +39,9 @@ const EditProSubCategory = () => {
   }, [router.query.id, update]);
 
   async function onsubmit(data) {
+    if (!store.user) return;
     setLoading(true);
+    data.user_id = store.user.id;
     Object.entries(data).forEach(([key, value]) => {
       if (!value) delete data[key];
     });

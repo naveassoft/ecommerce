@@ -69,7 +69,8 @@ const AddProduct = () => {
         type: "info",
       });
     }
-    // setLoading(true);
+    setLoading(true);
+    data.user_id = store.user.id;
     //find the category, sub category and pro sub name base on their ids;
     data.category_name = category?.find(
       (item) => item.id == data.category_id
@@ -113,7 +114,7 @@ const AddProduct = () => {
     } else {
       store?.setAlert({ msg: message, type: "error" });
     }
-    // setLoading(false);
+    setLoading(false);
   } //till;
 
   const inputs = [

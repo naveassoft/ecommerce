@@ -28,8 +28,10 @@ const EditOffer = () => {
   }, [update, router.query.id]);
 
   async function onsubmit(data) {
+    if (!store.user) return;
     setLoading(true);
 
+    data.user_id = store.user.id;
     data.image = data.image[0];
     const formData = new FormData();
     Object.entries(data).forEach(([key, value]) => {

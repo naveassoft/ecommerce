@@ -1,5 +1,5 @@
 import Joi from "joi";
-import { errorHandler, getDateFromDB, mySql } from "./common";
+import { errorHandler, getDateFromDB, mySql, varifyOwner } from "./common";
 
 export function getFaq(req, res) {
   try {
@@ -30,23 +30,29 @@ const FaqSchema = Joi.object({
 
 export async function postFaq(req, res) {
   try {
-    //api validateion;
-    const varify = FaqSchema.validate(req.body);
-    if (varify.error) {
-      errorHandler(res, { message: varify.error.message });
-      return;
+    if (!req.body.user_id) {
+      return errorHandler(res, { message: "Forbiden", status: 403 });
     }
 
-    const sql = "INSERT INTO faq SET ?";
-    mySql.query(sql, req.body, (err, result) => {
-      if (err) throw { message: err.sqlMessage };
-      else {
-        if (result.insertId > 0) {
-          res.send({ message: "Faq Added Successfully" });
-        } else {
-          res.send({ message: "Unable to Added, please try again" });
-        }
+    varifyOwner(res, req.body.user_id, () => {
+      delete req.body.user_id;
+      //api validateion;
+      const varify = FaqSchema.validate(req.body);
+      if (varify.error) {
+        errorHandler(res, { message: varify.error.message });
+        return;
       }
+      const sql = "INSERT INTO faq SET ?";
+      mySql.query(sql, req.body, (err, result) => {
+        if (err) return errorHandler(res, { message: err.sqlMessage });
+        else {
+          if (result.insertId > 0) {
+            res.send({ message: "Faq Added Successfully" });
+          } else {
+            res.send({ message: "Unable to Added, please try again" });
+          }
+        }
+      });
     });
   } catch (error) {
     errorHandler(res, error);
@@ -55,10 +61,15 @@ export async function postFaq(req, res) {
 
 export function deleteFaq(req, res) {
   try {
-    const sql = `DELETE FROM faq WHERE id=${req.query.id}`;
-    mySql.query(sql, (err) => {
-      if (err) throw { message: err.sqlMessage };
-      res.send({ message: "Deleted successfully" });
+    if (!req.body.user_id) {
+      return errorHandler(res, { message: "Forbiden", status: 403 });
+    }
+    varifyOwner(res, req.body.user_id, () => {
+      const sql = `DELETE FROM faq WHERE id=${req.body.id}`;
+      mySql.query(sql, (err) => {
+        if (err) return errorHandler(res, { message: err.sqlMessage });
+        res.send({ message: "Deleted successfully" });
+      });
     });
   } catch (error) {
     errorHandler(res, error);
@@ -67,24 +78,31 @@ export function deleteFaq(req, res) {
 
 export async function updateFaq(req, res) {
   try {
-    let data = "";
-    Object.entries(req.body).forEach(([key, value]) => {
-      if (!value) return;
-      if (data) {
-        data += `, ${key} = '${value}'`;
-      } else data += `${key} = '${value}'`;
-    });
+    if (!req.body.user_id) {
+      return errorHandler(res, { message: "Forbiden", status: 403 });
+    }
 
-    const sql = `UPDATE faq SET ${data} WHERE id=${req.query.id}`;
-    mySql.query(sql, (err, result) => {
-      if (err) throw { message: err.sqlMessage };
-      else {
-        if (result.changedRows > 0) {
-          res.send({ message: "Faq Updated Successfully" });
-        } else {
-          res.send({ message: "Unable to Update, please try again" });
+    varifyOwner(res, req.body.user_id, () => {
+      delete req.body.user_id;
+      let data = "";
+      Object.entries(req.body).forEach(([key, value]) => {
+        if (!value) return;
+        if (data) {
+          data += `, ${key} = '${value}'`;
+        } else data += `${key} = '${value}'`;
+      });
+
+      const sql = `UPDATE faq SET ${data} WHERE id=${req.query.id}`;
+      mySql.query(sql, (err, result) => {
+        if (err) return errorHandler(res, { message: err.sqlMessage });
+        else {
+          if (result.changedRows > 0) {
+            res.send({ message: "Faq Updated Successfully" });
+          } else {
+            res.send({ message: "Unable to Update, please try again" });
+          }
         }
-      }
+      });
     });
   } catch (error) {
     errorHandler(res, error);

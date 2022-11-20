@@ -1,11 +1,6 @@
-import React, { useEffect, useState } from "react";
-import { AiFillGift } from "react-icons/ai";
-import { AnimatePresence, motion } from "framer-motion";
-import { HiMinusCircle, HiPlusCircle } from "react-icons/hi";
-import { menuAnimation } from "../../../components/admin/components/SidebarMenu";
-import { FaEdit, FaTrash } from "react-icons/fa";
-import Link from "next/link";
 import DashboardLayout from "../../../components/admin/common/DashboardLayout";
+import { HiMinusCircle, HiPlusCircle } from "react-icons/hi";
+import React, { useEffect, useState } from "react";
 import {
   DocumentHandler,
   MainPagesFooterPart,
@@ -48,7 +43,9 @@ const DCupon = () => {
 
   async function deleteCoupon(id) {
     setLoading(true);
-    const { error, message } = await store?.deleteData(`/api/coupon?id=${id}`);
+    const { error, message } = await store?.deleteData(
+      `/api/coupon?id=${id}&user=${store.user.id}`
+    );
     if (!error) {
       store?.setAlert({ msg: message, type: "success" });
       setUpdate((prev) => !prev);
@@ -76,7 +73,6 @@ const DCupon = () => {
                 <th>CODE</th>
                 <th>TYPE</th>
                 <th>AMOUNT</th>
-                <th>STATUS</th>
               </tr>
             </thead>
             <tbody>
@@ -100,15 +96,6 @@ const DCupon = () => {
                       <td>{item.code}</td>
                       <td>{item.type}</td>
                       <td>{item.amount}</td>
-                      <td
-                        className={
-                          item.status === "Active"
-                            ? "text-green-600"
-                            : "text-red-500"
-                        }
-                      >
-                        {item.status}
-                      </td>
                     </tr>
                     {showAction === i && (
                       <DocumentHandler

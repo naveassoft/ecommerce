@@ -41,6 +41,7 @@ const EditVandor = () => {
     }
 
     setLoading(true);
+    data.user_id = store.user.id;
     const formData = new FormData();
     Object.entries(data).forEach(([key, value]) => {
       if (value) formData.append(key, value);
@@ -138,7 +139,11 @@ const EditVandor = () => {
             </div>
 
             <div className="flex justify-between">
-              <button type="submit" className="btn active text-sm">
+              <button
+                disabled={loading}
+                type="submit"
+                className="btn active text-sm"
+              >
                 UPDATE
               </button>
               <Link href="/admin/vandor">

@@ -48,8 +48,13 @@ const Products = () => {
       setLoading(true);
       const img = [image];
       img.push(...JSON.parse(features_img));
+      const formData = new FormData();
+      formData.append("user_id", store.user.id);
+      formData.append("id", id);
+      formData.append("image", JSON.stringify(img));
       const { error, message } = await store?.deleteData(
-        `/api/product?id=${id}&image=${img.join(",")}`
+        `/api/product`,
+        formData
       );
       if (!error) {
         store?.setAlert({ msg: message, type: "success" });

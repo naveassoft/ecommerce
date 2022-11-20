@@ -22,7 +22,7 @@ const AllCustomer = () => {
   useEffect(() => {
     (async function () {
       const { data, error } = await store?.fetchData(
-        `/api/order?customer=true&limit=${limit}&page=${page}`
+        `/api/order?customer=true&limit=${limit}&page=${page}&user=${store.user.id}`
       );
       if (data) {
         setCustomer(data.data);

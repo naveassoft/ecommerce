@@ -42,12 +42,24 @@ const DFAQ = () => {
 
   async function deleteFaq(id) {
     setLoading(true);
-    const { error, message } = await store?.deleteData(`/api/faq?id=${id}`);
-    if (!error) {
-      store?.setAlert({ msg: message, type: "success" });
-      setUpdate((prev) => !prev);
-    } else {
-      store?.setAlert({ msg: message, type: "error" });
+    try {
+      const res = await fetch("/api/faq", {
+        method: "DELETE",
+        headers: {
+          "content-type": "application/json",
+        },
+        body: JSON.stringify({
+          user_id: store.user.id,
+          id,
+        }),
+      });
+      const result = await res.json();
+      if (res.ok) {
+        store?.setAlert({ msg: result.message, type: "success" });
+        setUpdate((prev) => !prev);
+      } else throw result;
+    } catch (error) {
+      store?.setAlert({ msg: error.message, type: "error" });
     }
     setLoading(false);
   }

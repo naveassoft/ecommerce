@@ -21,7 +21,10 @@ const AdSlider = () => {
   }, []);
 
   async function onsubmit(data) {
+    if (!store.user) return;
+
     setLoading(true);
+    data.user_id = store.user.id;
     data.image = data.image[0];
     data.category_name = category?.find(
       (item) => item.id == data.category_id

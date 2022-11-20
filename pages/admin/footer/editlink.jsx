@@ -45,6 +45,7 @@ const UpdateImportantLinks = () => {
       });
     }
     const formData = new FormData();
+    formData.append("user_id", store.user.id);
     if (logo) {
       formData.append("logo", logo);
       formData.append("exist", links[9].info);

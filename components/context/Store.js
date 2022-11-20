@@ -39,16 +39,17 @@ const Store = () => {
     }
   }
 
-  async function deleteData(url) {
+  async function deleteData(url, formData) {
     try {
       const res = await fetch(url, {
         method: "DELETE",
+        body: formData,
       });
       const result = await res.json();
       if (res.ok) return { error: false, message: result.message };
       else throw result;
     } catch (error) {
-      return { error: true, message: result.message };
+      return { error: true, message: error.message };
     }
   }
 

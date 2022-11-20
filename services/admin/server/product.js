@@ -5,6 +5,7 @@ import {
   errorHandler,
   getDateFromDB,
   mySql,
+  varifyUser,
 } from "./common";
 
 //get common function;
@@ -82,65 +83,79 @@ export async function postProduct(req, res) {
       { name: "main_image", maxCount: 1 },
       { name: "features_img", maxCount: 5 },
     ];
-
     const { error } = await bodyParser(req, res, "assets", img);
     if (error || !req.files.main_image || !req.files.features_img) {
       return resError(req, res, "Error occured when image updlading");
     }
-    req.body.created_at = new Date();
-    req.body.main_image = req.files.main_image[0].filename;
-    const features_img = [];
-    req.files.features_img.forEach((img) => {
-      features_img.push(img.filename);
-    });
-    req.body.features_img = JSON.stringify(features_img);
+    if (!req.body.user_id) {
+      return errorHandler(res, { message: "Forbiden", status: 403 });
+    }
+    varifyUser(res, req.body.user_id, () => {
+      delete req.body.user_id;
+      req.body.created_at = new Date();
+      req.body.main_image = req.files.main_image[0].filename;
+      const features_img = [];
+      req.files.features_img.forEach((img) => {
+        features_img.push(img.filename);
+      });
+      req.body.features_img = JSON.stringify(features_img);
 
-    //api validateion;
-    const varify = ProductSchema.validate(req.body);
-    if (varify.error) return resError(req, res, varify.error.message);
+      //api validateion;
+      const varify = ProductSchema.validate(req.body);
+      if (varify.error) return resError(req, res, varify.error.message);
 
-    //check sku is exist;
-    const query = `SELECT * FROM product WHERE sku = '${req.body.sku}'`;
-    mySql.query(query, (err, result) => {
-      if (err) return resError(req, res, err.sqlMessage);
-      else if (result.length) {
-        return resError(
-          req,
-          res,
-          "Already this SKU added, try with different SKU"
-        );
-      } else {
-        //procced to uploading product;
-        const sql = "INSERT INTO product SET ?";
-        mySql.query(sql, req.body, (err, result) => {
-          if (err) return resError(req, res, err.sqlMessage);
-          else {
-            if (result.insertId > 0) {
-              res.send({ message: "Product Added Successfully" });
-            } else {
-              res.send({ message: "Unable to Added, please try again" });
+      //check sku is exist;
+      const query = `SELECT * FROM product WHERE sku = '${req.body.sku}'`;
+      mySql.query(query, (err, result) => {
+        if (err) return resError(req, res, err.sqlMessage);
+        else if (result.length) {
+          return resError(
+            req,
+            res,
+            "Already this SKU added, try with different SKU"
+          );
+        } else {
+          //procced to uploading product;
+          const sql = "INSERT INTO product SET ?";
+          mySql.query(sql, req.body, (err, result) => {
+            if (err) return resError(req, res, err.sqlMessage);
+            else {
+              if (result.insertId > 0) {
+                res.send({ message: "Product Added Successfully" });
+              } else {
+                res.send({ message: "Unable to Added, please try again" });
+              }
             }
-          }
-        });
-      }
+          });
+        }
+      });
     });
   } catch (error) {
     resError(req, res, error.message);
   }
 }
 
-export function deleteProduct(req, res) {
+export async function deleteProduct(req, res) {
   try {
-    const sql = `DELETE FROM product WHERE id=${req.query.id}`;
-    mySql.query(sql, (err) => {
-      if (err) {
-        errorHandler(res, { message: err.sqlMessage });
-      } else {
-        req.query.image.split(",").forEach((img) => {
-          deleteImage(img);
-        });
-        res.send({ message: "Deleted successfully" });
-      }
+    const { error } = await bodyParser(req, res, "", []);
+    if (error) {
+      return resError(req, res, "Error occured when parsing body");
+    }
+    if (!req.body.user_id) {
+      return errorHandler(res, { message: "Forbiden", status: 403 });
+    }
+    varifyUser(res, req.body.user_id, () => {
+      const sql = `DELETE FROM product WHERE id=${req.body.id}`;
+      mySql.query(sql, (err) => {
+        if (err) {
+          errorHandler(res, { message: err.sqlMessage });
+        } else {
+          JSON.parse(req.body.image).forEach((img) => {
+            deleteImage(img);
+          });
+          res.send({ message: "Deleted successfully" });
+        }
+      });
     });
   } catch (error) {
     errorHandler(res, error);
@@ -154,65 +169,75 @@ export async function updateProduct(req, res) {
       { name: "features_img", maxCount: 5 },
     ];
     const { error } = await bodyParser(req, res, "assets", img);
-    if (error) throw { message: "Error occured when image updlading" };
-
-    if (Object.keys(req.body).length < 2) {
-      return res.status(404).send({ message: "No updated feild found" });
-    }
-
-    if (req.files.main_image) {
-      req.body.main_image = req.files.main_image[0].filename;
-    }
-    if (req.files.features_img) {
-      const features_img = [];
-      req.files.features_img.forEach((img) => {
-        features_img.push(img.filename);
+    if (error) {
+      return errorHandler(res, {
+        message: "Error occured when image updlading",
       });
-      req.body.features_img = JSON.stringify(features_img);
+    }
+    if (!req.body.user_id) {
+      return errorHandler(res, { message: "Forbiden", status: 403 });
     }
 
-    let deleteImg;
-    if (req.body.deleteImage) {
-      deleteImg = JSON.parse(req.body.deleteImage);
-      delete req.body.deleteImage;
-    }
+    varifyUser(res, req.body.user_id, () => {
+      delete req.body.user_id;
 
-    let data = "";
-    Object.entries(req.body).forEach(([key, value]) => {
-      if (value) {
-        if (data) {
-          data += `, ${key} = '${value}'`;
-        } else data += `${key} = '${value}'`;
+      if (Object.keys(req.body).length < 2) {
+        return res.status(404).send({ message: "No updated feild found" });
       }
-    });
-    const sql = `UPDATE product SET ${data} WHERE id=${req.query.id}`;
-    mySql.query(sql, (err, result) => {
-      if (err) {
-        console.log(err);
-        //if err occured;
-        if (req.files.main_image) {
-          deleteImage(req.files.main_image[0].filename);
+
+      if (req.files.main_image) {
+        req.body.main_image = req.files.main_image[0].filename;
+      }
+      if (req.files.features_img) {
+        const features_img = [];
+        req.files.features_img.forEach((img) => {
+          features_img.push(img.filename);
+        });
+        req.body.features_img = JSON.stringify(features_img);
+      }
+
+      let deleteImg;
+      if (req.body.deleteImage) {
+        deleteImg = JSON.parse(req.body.deleteImage);
+        delete req.body.deleteImage;
+      }
+
+      let data = "";
+      Object.entries(req.body).forEach(([key, value]) => {
+        if (value) {
+          if (data) {
+            data += `, ${key} = '${value}'`;
+          } else data += `${key} = '${value}'`;
         }
-        if (req.files.features_img) {
-          req.files.features_img.forEach((img) => {
-            deleteImage(img.filename);
-          });
-        }
-        return errorHandler(res, {
-          message: err.sqlMessage,
-        }); //till;
-      } else {
-        if (result.changedRows > 0) {
-          if (deleteImg) {
-            deleteImg.forEach((img) => {
-              deleteImage(img);
+      });
+      const sql = `UPDATE product SET ${data} WHERE id=${req.query.id}`;
+      mySql.query(sql, (err, result) => {
+        if (err) {
+          //if err occured;
+          if (req.files.main_image) {
+            deleteImage(req.files.main_image[0].filename);
+          }
+          if (req.files.features_img) {
+            req.files.features_img.forEach((img) => {
+              deleteImage(img.filename);
             });
           }
-          res.send({ message: "Product Updated Successfully" });
+          return errorHandler(res, {
+            message: err.sqlMessage,
+          }); //till;
         } else {
-          res.send({ message: "Unable to Update, please try again" });
+          if (result.changedRows > 0) {
+            if (deleteImg) {
+              deleteImg.forEach((img) => {
+                deleteImage(img);
+              });
+            }
+            res.send({ message: "Product Updated Successfully" });
+          } else {
+            res.send({ message: "Unable to Update, please try again" });
+          }
         }
-      }
+      });
     });
   } catch (error) {
     errorHandler(res, error);

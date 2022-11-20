@@ -35,6 +35,7 @@ const EditUser = () => {
     if (!user) return;
 
     setLoading(true);
+    data.user_id = store.user.id;
     const formData = new FormData();
     Object.entries(data).forEach(([key, value]) => {
       if (value) formData.append(key, value);
@@ -55,10 +56,9 @@ const EditUser = () => {
   }
 
   const userRole = [
-    { role: "customer", txt: "Customer" },
-    { role: "staff", txt: "Sales Staff" },
-    { role: "owner", txt: "Owner" },
-    { role: "administrator", txt: "Store Administrator" },
+    { role: "", txt: "Select" },
+    { role: "owner", txt: "Admin" },
+    { role: "uploader", txt: "Product uploader" },
   ];
   return (
     <DashboardLayout>
@@ -106,7 +106,6 @@ const EditUser = () => {
             <div>
               <label>User Role</label>
               <select className="w-full" {...register("user_role")}>
-                <option value=""></option>
                 {userRole.map((item, i) => (
                   <option
                     key={i}

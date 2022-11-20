@@ -1,76 +1,81 @@
 import Joi from "joi";
-import { errorHandler, getDateFromDB, mySql } from "./common";
+import { errorHandler, getDateFromDB, mySql, varifyOwner } from "./common";
 
 export function getOder(req, res) {
-  if (req.query.id) {
-    //send single order;
-    const sql = `SELECT * FROM orders WHERE id=${req.query.id}`;
-    getDateFromDB(res, sql);
+  if (!req.query.user) {
+    return errorHandler(res, { message: "Forbiden", status: 403 });
   }
-  //
-  else if (req.query.date && req.query.status) {
-    if (!req.query.start && !req.query.end) {
-      errorHandler(res, { message: "Start date and End date must be given" });
-      return;
+  varifyOwner(res, req.query.user, () => {
+    if (req.query.id) {
+      //send single order;
+      const sql = `SELECT * FROM orders WHERE id=${req.query.id}`;
+      getDateFromDB(res, sql);
     }
-    const limit = req.query.limit || 10;
-    const page = parseInt(req.query.page || 0) * limit;
-    const sql = `SELECT * FROM orders WHERE created_at >= '${req.query.start}' AND created_at <= '${req.query.end}' AND status = '${req.query.status}' LIMIT ${page}, ${limit}`;
-    const count = `SELECT COUNT(id) FROM orders WHERE created_at BETWEEN '${req.query.start}' AND '${req.query.end}'`;
-    getDateFromDB(res, sql, count);
-  }
-  // send orders based on status;
-  else if (req.query.status) {
-    const limit = req.query.limit || 10;
-    const page = parseInt(req.query.page || 0) * limit;
-    const sql = `SELECT * FROM orders WHERE status = '${req.query.status}' LIMIT ${page}, ${limit}`;
-    const count = `SELECT COUNT(id) FROM orders WHERE status = '${req.query.status}'`;
-    getDateFromDB(res, sql, count);
-  }
-  // send orders based on datae;
-  else if (req.query.date) {
-    if (!req.query.start && !req.query.end) {
-      errorHandler(res, { message: "Start date and End date must be given" });
-      return;
-    }
-    const limit = req.query.limit || 10;
-    const page = parseInt(req.query.page || 0) * limit;
-    const sql = `SELECT * FROM orders WHERE created_at >= '${req.query.start}' AND created_at <= '${req.query.end}' LIMIT ${page}, ${limit}`;
-    const count = `SELECT COUNT(id) FROM orders WHERE created_at BETWEEN '${req.query.start}' AND '${req.query.end}'`;
-    getDateFromDB(res, sql, count);
-  }
-  //send customer whose placed order ;
-  else if (req.query.customer) {
-    const limit = req.query.limit || 10;
-    const page = parseInt(req.query.page || 0) * limit;
-    const sql = `SELECT DISTINCT customer_id FROM orders LIMIT ${page}, ${limit}`;
-
-    mySql.query(sql, (err, result) => {
-      if (err) return errorHandler(res, { message: err.sqlMessage });
-      if (!result.length) {
-        return errorHandler(res, { message: "Not Found", status: 404 });
+    //
+    else if (req.query.date && req.query.status) {
+      if (!req.query.start && !req.query.end) {
+        errorHandler(res, { message: "Start date and End date must be given" });
+        return;
       }
-      const customerId = [];
-      result.forEach((item) => customerId.push(item.customer_id));
-      const query = `SELECT * FROM user WHERE id IN(${customerId})`;
-      const count = "SELECT DISTINCT customer_id FROM orders";
-      mySql.query(query, (err, data) => {
+      const limit = req.query.limit || 10;
+      const page = parseInt(req.query.page || 0) * limit;
+      const sql = `SELECT * FROM orders WHERE created_at >= '${req.query.start}' AND created_at <= '${req.query.end}' AND status = '${req.query.status}' LIMIT ${page}, ${limit}`;
+      const count = `SELECT COUNT(id) FROM orders WHERE created_at BETWEEN '${req.query.start}' AND '${req.query.end}'`;
+      getDateFromDB(res, sql, count);
+    }
+    // send orders based on status;
+    else if (req.query.status) {
+      const limit = req.query.limit || 10;
+      const page = parseInt(req.query.page || 0) * limit;
+      const sql = `SELECT * FROM orders WHERE status = '${req.query.status}' LIMIT ${page}, ${limit}`;
+      const count = `SELECT COUNT(id) FROM orders WHERE status = '${req.query.status}'`;
+      getDateFromDB(res, sql, count);
+    }
+    // send orders based on datae;
+    else if (req.query.date) {
+      if (!req.query.start && !req.query.end) {
+        errorHandler(res, { message: "Start date and End date must be given" });
+        return;
+      }
+      const limit = req.query.limit || 10;
+      const page = parseInt(req.query.page || 0) * limit;
+      const sql = `SELECT * FROM orders WHERE created_at >= '${req.query.start}' AND created_at <= '${req.query.end}' LIMIT ${page}, ${limit}`;
+      const count = `SELECT COUNT(id) FROM orders WHERE created_at BETWEEN '${req.query.start}' AND '${req.query.end}'`;
+      getDateFromDB(res, sql, count);
+    }
+    //send customer whose placed order ;
+    else if (req.query.customer) {
+      const limit = req.query.limit || 10;
+      const page = parseInt(req.query.page || 0) * limit;
+      const sql = `SELECT DISTINCT customer_id FROM orders LIMIT ${page}, ${limit}`;
+
+      mySql.query(sql, (err, result) => {
         if (err) return errorHandler(res, { message: err.sqlMessage });
-        mySql.query(count, (err, count) => {
+        if (!result.length) {
+          return errorHandler(res, { message: "Not Found", status: 404 });
+        }
+        const customerId = [];
+        result.forEach((item) => customerId.push(item.customer_id));
+        const query = `SELECT * FROM user WHERE id IN(${customerId})`;
+        const count = "SELECT DISTINCT customer_id FROM orders";
+        mySql.query(query, (err, data) => {
           if (err) return errorHandler(res, { message: err.sqlMessage });
-          res.send({ count: count.length, data });
+          mySql.query(count, (err, count) => {
+            if (err) return errorHandler(res, { message: err.sqlMessage });
+            res.send({ count: count.length, data });
+          });
         });
       });
-    });
-  }
-  // send orders for home order page;
-  else {
-    const limit = req.query.limit || 10;
-    const page = parseInt(req.query.page || 0) * limit;
-    const sql = `SELECT * FROM orders LIMIT ${page}, ${limit}`;
-    const count = "SELECT COUNT(id) FROM orders";
-    getDateFromDB(res, sql, count);
-  }
+    }
+    // send orders for home order page;
+    else {
+      const limit = req.query.limit || 10;
+      const page = parseInt(req.query.page || 0) * limit;
+      const sql = `SELECT * FROM orders LIMIT ${page}, ${limit}`;
+      const count = "SELECT COUNT(id) FROM orders";
+      getDateFromDB(res, sql, count);
+    }
+  });
 }
 
 const ProductSchema = Joi.object().keys({
@@ -207,63 +212,72 @@ export async function postOrder(req, res) {
 }
 
 export async function updateOrder(req, res) {
-  if (req.body.order_status === "delivered") {
-    return errorHandler(res, {
-      message: "This order was delivered",
-      status: 403,
-    });
+  if (!req.body.user) {
+    return errorHandler(res, { message: "Forbiden", status: 403 });
   }
-  const sql = `UPDATE orders SET status = '${req.body.status}' WHERE id=${req.query.id}`;
-  mySql.query(sql, (err, result) => {
-    if (err) errorHandler(res, { message: err.sqlMessage });
-    else {
-      if (result.changedRows === 0) {
-        return res.send({ message: "Unable to Update, please try again" });
-      }
-      const status = req.body.status;
-      const orderStatus = req.body.order_status;
 
-      if (orderStatus === "canceled" && status !== "canceled") {
-        JSON.parse(req.body.products).forEach((product, i, arr) => {
-          const query = `UPDATE product SET stock = stock - ${product.quantity} WHERE id= ${product.product_id}`;
-          mySql.query(query, (err) => {
-            if (err) console.log(err);
-            //at end of the loop;
-            if (arr.length - 1 === i) {
-              //update user;
-              if (status === "delivered") {
-                const query = `UPDATE user SET order_placed = order_placed + ${1} WHERE id= ${
-                  req.body.customer_id
-                }`;
-                mySql.query(query, (err) => {
-                  if (err) console.log(err);
-                  res.send({ message: "Order Updated Successfully" });
-                });
-              } else res.send({ message: "Order Updated Successfully" });
-            }
-          });
-        });
-      } else if (status === "delivered") {
-        //update user;
-        const query = `UPDATE user SET order_placed = order_placed + ${1} WHERE id= ${
-          req.body.customer_id
-        }`;
-        mySql.query(query, (err) => {
-          if (err) console.log(err);
-          res.send({ message: "Order Updated Successfully" });
-        });
-      } else if (status === "canceled") {
-        JSON.parse(req.body.products).forEach((product, i, arr) => {
-          const query = `UPDATE product SET stock = stock + ${product.quantity} WHERE id= ${product.product_id}`;
-          mySql.query(query, (err) => {
-            if (err) console.log(err);
-            if (arr.length - 1 === i) {
-              res.send({ message: "Order Updated Successfully" });
-            }
-          });
-        });
-      }
+  varifyOwner(res, req.body.user, () => {
+    if (req.body.order_status === "delivered") {
+      return errorHandler(res, {
+        message: "This order was delivered",
+        status: 403,
+      });
     }
+    const sql = `UPDATE orders SET status = '${req.body.status}' WHERE id=${req.query.id}`;
+    mySql.query(sql, (err, result) => {
+      if (err) errorHandler(res, { message: err.sqlMessage });
+      else {
+        if (result.changedRows === 0) {
+          return res.send({ message: "Unable to Update, please try again" });
+        }
+        const status = req.body.status;
+        const orderStatus = req.body.order_status;
+
+        if (orderStatus === "canceled" && status !== "canceled") {
+          JSON.parse(req.body.products).forEach((product, i, arr) => {
+            const query = `UPDATE product SET stock = stock - ${product.quantity} WHERE id= ${product.product_id}`;
+            mySql.query(query, (err) => {
+              if (err)
+                return errorHandler(res, { message: "Unable to update" });
+              //at end of the loop;
+              if (arr.length - 1 === i) {
+                //update user;
+                if (status === "delivered") {
+                  const query = `UPDATE user SET order_placed = order_placed + ${1} WHERE id= ${
+                    req.body.customer_id
+                  }`;
+                  mySql.query(query, (err) => {
+                    if (err)
+                      return errorHandler(res, { message: "Unable to update" });
+                    res.send({ message: "Order Updated Successfully" });
+                  });
+                } else res.send({ message: "Order Updated Successfully" });
+              }
+            });
+          });
+        } else if (status === "delivered") {
+          //update user;
+          const query = `UPDATE user SET order_placed = order_placed + ${1} WHERE id= ${
+            req.body.customer_id
+          }`;
+          mySql.query(query, (err) => {
+            if (err) return errorHandler(res, { message: "Unable to update" });
+            res.send({ message: "Order Updated Successfully" });
+          });
+        } else if (status === "canceled") {
+          JSON.parse(req.body.products).forEach((product, i, arr) => {
+            const query = `UPDATE product SET stock = stock + ${product.quantity} WHERE id= ${product.product_id}`;
+            mySql.query(query, (err) => {
+              if (err)
+                return errorHandler(res, { message: "Unable to update" });
+              if (arr.length - 1 === i) {
+                res.send({ message: "Order Updated Successfully" });
+              }
+            });
+          });
+        }
+      }
+    });
   });
 }
 

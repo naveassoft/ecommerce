@@ -29,7 +29,7 @@ const AddVandor = () => {
     } else delete data.confirm_password; //till;
 
     setLoading(true);
-
+    data.user_id = store.user.id;
     if (data.shop_logo) data.shop_logo = data.shop_logo[0];
     const formData = new FormData();
     Object.entries(data).forEach(([key, value]) => {

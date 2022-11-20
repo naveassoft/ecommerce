@@ -1,8 +1,7 @@
-import { AnimatePresence, motion } from "framer-motion";
-import Link from "next/link";
 import React, { useEffect, useState } from "react";
-import { FaEdit, FaHome, FaTrash } from "react-icons/fa";
 import { HiMinusCircle, HiPlusCircle } from "react-icons/hi";
+import DashboardLayout from "../../../../components/admin/common/DashboardLayout";
+import useStore from "../../../../components/context/useStore";
 import {
   DocumentHandler,
   MainPagesFooterPart,
@@ -10,9 +9,6 @@ import {
   NoDataFount,
   PageInfo,
 } from "../../../../components/admin/common/common";
-import DashboardLayout from "../../../../components/admin/common/DashboardLayout";
-import { menuAnimation } from "../../../../components/admin/components/SidebarMenu";
-import useStore from "../../../../components/context/useStore";
 
 const DSubCategory = () => {
   const [showAction, setShowAction] = useState(-1);
@@ -44,9 +40,15 @@ const DSubCategory = () => {
   }, [update, limit, page]);
 
   async function deleteSubCategory(id, image) {
+    if (!store.user) return;
     setLoading(true);
+    const formData = new FormData();
+    formData.append("user_id", store.user.id);
+    formData.append("id", id);
+    formData.append("image", image);
     const { error, message } = await store?.deleteData(
-      `/api/subcategory?id=${id}&image=${image}`
+      "/api/subcategory",
+      formData
     );
     if (!error) {
       store?.setAlert({ msg: message, type: "success" });

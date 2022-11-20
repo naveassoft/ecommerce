@@ -42,10 +42,13 @@ const ADV = () => {
   }, [update, page, limit]);
 
   async function deleteAdv(id, image) {
+    if (!store.user) return;
     setLoading(true);
-    const { error, message } = await store?.deleteData(
-      `/api/adv?id=${id}&image=${image}`
-    );
+    const formData = new FormData();
+    formData.append("user_id", store.user.id);
+    formData.append("id", id);
+    formData.append("image", image);
+    const { error, message } = await store?.deleteData(`/api/adv`, formData);
     if (!error) {
       store?.setAlert({ msg: message, type: "success" });
       setUpdate((prev) => !prev);

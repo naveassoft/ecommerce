@@ -10,9 +10,11 @@ import Link from "next/link";
 const AddUser = () => {
   const [showPassword, setShowPassword] = useState(false),
     { handleSubmit, register, reset } = useForm(),
-    [loading, setLoading] = (useState(false).store = useStore(null));
+    [loading, setLoading] = useState(false),
+    store = useStore(null);
 
   async function onsubmit(data) {
+    if (!store.user) return;
     if (data.password !== data.confirm_password) {
       return store?.setAlert({
         msg: "Please Check your password carefully",
@@ -21,7 +23,7 @@ const AddUser = () => {
     } else delete data.confirm_password;
 
     setLoading(true);
-
+    data.user_id = store.user.id;
     if (data.profile) data.profile = data.profile[0];
     const formData = new FormData();
     Object.entries(data).forEach(([key, value]) => {
@@ -98,13 +100,13 @@ const AddUser = () => {
             <div>
               <label>User Role</label>
               <select
+                {...register("user_role", { required: true })}
+                required
                 className="w-full"
-                defaultValue="customer"
-                {...register("user_role")}
               >
-                <option value="customer">Customer</option>
-                <option value="staff">Sales Staff</option>
-                <option value="admin">Admin</option>
+                <option value="">Select</option>
+                <option value="owner">Admin</option>
+                <option value="uploader">Product uploader</option>
               </select>
             </div>
             <div>

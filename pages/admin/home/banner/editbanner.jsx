@@ -62,8 +62,9 @@ const EditBanner = () => {
   }
 
   async function onsubmit(data) {
+    if (!store.user) return;
     setLoading(true);
-
+    data.user_id = store.user.id;
     data.image = data.image[0];
     if (data.category_id) {
       data.category_name = category?.find(

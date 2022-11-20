@@ -20,8 +20,10 @@ const AddProsubCategory = () => {
   }, []);
 
   async function onsubmit(data) {
+    if (!store.user) return;
     setLoading(true);
     try {
+      data.user_id = store.user.id;
       data.sub_category_name = category.find(
         (item) => item.id == data.sub_category_id
       ).name;

@@ -8,6 +8,7 @@ import { FaTrash } from "react-icons/fa";
 import { useRouter } from "next/router";
 import dynamic from "next/dynamic";
 import Link from "next/link";
+import { date } from "joi";
 const TextEditor = dynamic(
   () => import("../../../components/admin/common/TextEditor"),
   {
@@ -101,6 +102,7 @@ const EditProduct = () => {
   async function onSubmit(data) {
     if (!product) return;
     setLoading(true);
+    data.user_id = store.user.id;
     //find the category, sub category and pro sub name base on their ids;
     if (data.category_id) {
       data.category_name = category?.find(

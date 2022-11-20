@@ -5,6 +5,7 @@ import { FaHome } from "react-icons/fa";
 import { useRouter } from "next/router";
 import dynamic from "next/dynamic";
 import Link from "next/link";
+import { PageInfo } from "../../../../components/admin/common/common";
 const TextEditor = dynamic(
   () => import("../../../../components/admin/common/TextEditor"),
   {
@@ -43,7 +44,10 @@ const UpdatePrivacy = () => {
         headers: {
           "content-type": "application/json",
         },
-        body: JSON.stringify({ description: description.current?.value }),
+        body: JSON.stringify({
+          description: description.current?.value,
+          user_id: store.user.id,
+        }),
       });
       const result = await res.json();
       if (res.ok) {
@@ -58,15 +62,7 @@ const UpdatePrivacy = () => {
   return (
     <DashboardLayout>
       <div className="dashboard-home-container">
-        <div className="page-info">
-          <div className="icon">
-            <FaHome />
-          </div>
-          <div>
-            <h3>Privacypolicy Information</h3>
-            <p>Edit Privacypolicy Information from here</p>
-          </div>
-        </div>
+        <PageInfo title="Privacypolicy" type="Edit" />
 
         <form onSubmit={(e) => onSubmit(e)} className="container">
           <div className="z-40 space-y-3">
@@ -92,10 +88,6 @@ const UpdatePrivacy = () => {
             </Link>
           </div>
         </form>
-
-        <p className="my-7 text-gray-400 text-sm">
-          Copyright © 2022 All Rights Reserved.
-        </p>
       </div>
     </DashboardLayout>
   );

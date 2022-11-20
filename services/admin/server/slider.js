@@ -5,6 +5,7 @@ import {
   errorHandler,
   getDateFromDB,
   mySql,
+  varifyOwner,
 } from "./common";
 
 export function getSlider(req, res) {
@@ -41,42 +42,59 @@ export async function postSlider(req, res) {
 
     const { error } = await bodyParser(req, res, "assets", img);
     if (error || !req.files.image) {
-      throw { message: "Error occured when image updlading" };
+      return errorHandler(res, {
+        message: "Error occured when image updlading",
+      });
+    }
+    if (!req.body.user_id) {
+      return errorHandler(res, { message: "Forbiden", status: 403 });
     }
 
-    req.body.image = req.files.image[0].filename;
+    varifyOwner(res, req.body.user_id, () => {
+      delete req.body.user_id;
 
-    //api validateion;
-    const varify = sliderSchema.validate(req.body);
-    if (varify.error) {
-      deleteImage(req.body.image);
-      errorHandler(res, { message: varify.error.message });
-      return;
-    }
-
-    const sql = "INSERT INTO slider SET ?";
-    mySql.query(sql, req.body, (err, result) => {
-      if (err) throw { message: err.sqlMessage };
-      else {
-        if (result.insertId > 0) {
-          res.send({ message: "Slider Added Successfully" });
-        } else {
-          res.send({ message: "Unable to Added, please try again" });
-        }
+      req.body.image = req.files.image[0].filename;
+      //api validateion;
+      const varify = sliderSchema.validate(req.body);
+      if (varify.error) {
+        deleteImage(req.body.image);
+        errorHandler(res, { message: varify.error.message });
+        return;
       }
+
+      const sql = "INSERT INTO slider SET ?";
+      mySql.query(sql, req.body, (err, result) => {
+        if (err) throw { message: err.sqlMessage };
+        else {
+          if (result.insertId > 0) {
+            res.send({ message: "Slider Added Successfully" });
+          } else {
+            res.send({ message: "Unable to Added, please try again" });
+          }
+        }
+      });
     });
   } catch (error) {
     errorHandler(res, error);
   }
 }
 
-export function deleteSlider(req, res) {
+export async function deleteSlider(req, res) {
   try {
-    const sql = `DELETE FROM slider WHERE id=${req.query.id}`;
-    mySql.query(sql, (err) => {
-      if (err) throw { message: err.sqlMessage };
-      deleteImage(req.query.image);
-      res.send({ message: "Deleted successfully" });
+    const { error } = await bodyParser(req, res, "", []);
+    if (error) {
+      return errorHandler(res, { message: "Error occured when parsing body" });
+    }
+    if (!req.body.user_id) {
+      return errorHandler(res, { message: "Forbiden", status: 403 });
+    }
+    varifyOwner(res, req.body.user_id, () => {
+      const sql = `DELETE FROM slider WHERE id=${req.body.id}`;
+      mySql.query(sql, (err) => {
+        if (err) return errorHandler(res, { message: err.sqlMessage });
+        deleteImage(req.query.image);
+        res.send({ message: "Deleted successfully" });
+      });
     });
   } catch (error) {
     errorHandler(res, error);
@@ -87,36 +105,46 @@ export async function updateSlider(req, res) {
   try {
     const img = [{ name: "image", maxCount: 1 }];
     const { error } = await bodyParser(req, res, "assets", img);
-    if (error) throw { message: "Error occured when image updlading" };
-
-    let exist;
-    if (req.files.image) {
-      req.body.image = req.files.image[0].filename;
-      exist = req.body.existimage;
-      delete req.body.existimage;
+    if (error) {
+      return errorHandler(res, {
+        message: "Error occured when image updlading",
+      });
     }
-    let data = "";
-    Object.entries(req.body).forEach(([key, value]) => {
-      if (value) {
-        if (data) {
-          data += `, ${key} = '${value}'`;
-        } else data += `${key} = '${value}'`;
-      }
-    });
+    if (!req.body.user_id) {
+      return errorHandler(res, { message: "Forbiden", status: 403 });
+    }
 
-    const sql = `UPDATE slider SET ${data} WHERE id=${req.query.id}`;
-    mySql.query(sql, (err, result) => {
-      if (err) throw { message: err.sqlMessage };
-      else {
-        if (result.changedRows > 0) {
-          if (exist) {
-            deleteImage(exist);
-          }
-          res.send({ message: "Slider Updated Successfully" });
-        } else {
-          res.send({ message: "Unable to Update, please try again" });
-        }
+    varifyOwner(res, req.body.user_id, () => {
+      delete req.body.user_id;
+      let exist;
+      if (req.files.image) {
+        req.body.image = req.files.image[0].filename;
+        exist = req.body.existimage;
+        delete req.body.existimage;
       }
+      let data = "";
+      Object.entries(req.body).forEach(([key, value]) => {
+        if (value) {
+          if (data) {
+            data += `, ${key} = '${value}'`;
+          } else data += `${key} = '${value}'`;
+        }
+      });
+
+      const sql = `UPDATE slider SET ${data} WHERE id=${req.query.id}`;
+      mySql.query(sql, (err, result) => {
+        if (err) throw { message: err.sqlMessage };
+        else {
+          if (result.changedRows > 0) {
+            if (exist) {
+              deleteImage(exist);
+            }
+            res.send({ message: "Slider Updated Successfully" });
+          } else {
+            res.send({ message: "Unable to Update, please try again" });
+          }
+        }
+      });
     });
   } catch (error) {
     errorHandler(res, error);

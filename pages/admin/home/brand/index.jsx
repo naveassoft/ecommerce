@@ -41,10 +41,13 @@ const DBrand = () => {
   }, [update, limit, page]);
 
   async function deleteBrand(id, image) {
+    if (!store.user) return;
     setLoading(true);
-    const { error, message } = await store?.deleteData(
-      `/api/brand?id=${id}&image=${image}`
-    );
+    const formData = new FormData();
+    formData.append("user_id", store.user.id);
+    formData.append("id", id);
+    formData.append("image", image);
+    const { error, message } = await store?.deleteData(`/api/brand`, formData);
     if (!error) {
       store?.setAlert({ msg: message, type: "success" });
       setUpdate((prev) => !prev);

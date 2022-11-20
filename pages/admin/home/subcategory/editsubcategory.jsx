@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import { FaHome } from "react-icons/fa";
 import { useForm } from "react-hook-form";
 import DashboardLayout from "../../../../components/admin/common/DashboardLayout";
 import Link from "next/link";
@@ -37,8 +36,10 @@ const EditSubCategory = () => {
   }, [update, router.query.id]);
 
   async function onsubmit(data) {
+    if (!store.user) return;
     setLoading(true);
 
+    data.user_id = store.user.id;
     data.image = data.image[0];
     const formData = new FormData();
     Object.entries(data).forEach(([key, value]) => {

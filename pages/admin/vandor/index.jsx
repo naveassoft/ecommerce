@@ -15,7 +15,6 @@ const Vandor = () => {
   const [showAction, setShowAction] = useState(-1);
   const [loading, setLoading] = useState(false);
   const [update, setUpdate] = useState(false);
-  const [filtered, setfiltered] = useState("");
   const [vandor, setVandor] = useState(null);
   const [limit, setLimit] = useState(5);
   const [count, setCount] = useState(0);
@@ -49,8 +48,13 @@ const Vandor = () => {
     const confirm = window.confirm("Are you sure to delete the user?");
     if (confirm) {
       setLoading(true);
+      const formData = new FormData();
+      formData.append("user_id", store.user.id);
+      formData.append("id", id);
+      formData.append("image", image);
       const { error, message } = await store?.deleteData(
-        `/api/vandor?id=${id}&image=${image}`
+        `/api/vandor`,
+        formData
       );
       if (!error) {
         store?.setAlert({ msg: message, type: "success" });

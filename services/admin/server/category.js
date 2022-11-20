@@ -5,7 +5,7 @@ import {
   errorHandler,
   getDateFromDB,
   mySql,
-  varifyUser,
+  varifyOwner,
 } from "./common";
 
 export function getCategory(req, res) {
@@ -73,7 +73,7 @@ export async function postCategory(req, res) {
         }
       });
     }
-    varifyUser(res, req.body.user_id, addC);
+    varifyOwner(res, req.body.user_id, addC);
   } catch (error) {
     errorHandler(res, error);
   }
@@ -136,7 +136,7 @@ export async function deleteCategory(req, res) {
       });
     });
   }
-  varifyUser(res, req.body.user_id, deleteC);
+  varifyOwner(res, req.body.user_id, deleteC);
 }
 
 export async function updatetCategory(req, res) {
@@ -179,7 +179,7 @@ export async function updatetCategory(req, res) {
         }
       });
     }
-    varifyUser(res, req.body.user_id, update);
+    varifyOwner(res, req.body.user_id, update);
   } catch (error) {
     errorHandler(res, error);
   }

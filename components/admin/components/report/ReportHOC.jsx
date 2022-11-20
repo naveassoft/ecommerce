@@ -31,7 +31,7 @@ const ReportHOC = (OriginalComponent, title) => {
     //get orders ;
     async function getAllOrder() {
       const { data, error } = await store?.fetchData(
-        `/api/order?status=${title}&limit=${limit}&page=${page}`
+        `/api/order?status=${title}&limit=${limit}&page=${page}&user=${store.user.id}`
       );
       if (data) {
         setOrders(data.data);
