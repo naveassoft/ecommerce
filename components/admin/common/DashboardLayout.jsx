@@ -1,16 +1,18 @@
 import { AnimatePresence, motion } from "framer-motion";
-import SidebarMenu from "../components/SidebarMenu";
-import { FaBars, FaSearch } from "react-icons/fa";
-import { useState } from "react";
+import { menus, vendorMenu } from "../../../services/admin/menus";
 import { AiOutlineClear } from "react-icons/ai";
+import useStore from "../../context/useStore";
+import { FaBars } from "react-icons/fa";
 import { useRouter } from "next/router";
-import Link from "next/link";
-import { menus } from "../../../services/admin/menus";
+import { useState } from "react";
+import Header from "./Header";
+import Menus from "./Menus";
 
 const DashboardLayout = ({ children }) => {
   const [isOpen, setIsOpen] = useState(false);
   const toggle = () => setIsOpen(!isOpen);
   const router = useRouter();
+  const store = useStore();
 
   const showAnimation = {
     hidden: {
@@ -52,44 +54,21 @@ const DashboardLayout = ({ children }) => {
           </div>
         </div>
         <section className="menus-wrapper">
-          {menus.map((route, index) => {
-            if (route.subRoutes) {
-              return (
-                <SidebarMenu
-                  key={index}
-                  setIsOpen={setIsOpen}
-                  route={route}
-                  showAnimation={showAnimation}
-                  isOpen={isOpen}
-                />
-              );
-            }
-
-            return (
-              <Link
-                href={route.path}
-                key={index}
-                className={`link ml-[2px] ${
-                  router.pathname === route.path ? "active" : ""
-                }`}
-              >
-                <div className="text-xl">{route.icon}</div>
-                <AnimatePresence>
-                  {isOpen && (
-                    <motion.div
-                      variants={showAnimation}
-                      initial="hidden"
-                      animate="show"
-                      exit="hidden"
-                      className="link_text"
-                    >
-                      {route.name}
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </Link>
-            );
-          })}
+          {store.user && store.user.user_role !== "owner" ? (
+            <Menus
+              isOpen={isOpen}
+              menus={vendorMenu}
+              setIsOpen={setIsOpen}
+              showAnimation={showAnimation}
+            />
+          ) : (
+            <Menus
+              isOpen={isOpen}
+              menus={menus}
+              setIsOpen={setIsOpen}
+              showAnimation={showAnimation}
+            />
+          )}
           <div
             onClick={() => window.location.reload()}
             className="link ml-[3px]"
@@ -114,31 +93,7 @@ const DashboardLayout = ({ children }) => {
         </section>
       </motion.div>
 
-      <motion.div
-        className="admin-header"
-        animate={{
-          paddingLeft: isOpen ? "260px" : "80px",
-          transition: {
-            duration: 0.5,
-          },
-        }}
-      >
-        <div className="header-wrapper">
-          <div className="relative">
-            <input type="text" placeholder="Search" />
-            <div className="absolute right-3 text-gray-500 top-2/4 -translate-y-2/4">
-              <FaSearch />
-            </div>
-          </div>
-          <div className="flex gap-2 items-center">
-            <p className="text-gray-500">Navieasoft LTD</p>
-            <div className="relative">
-              <img className="h-10 w-10 rounded-full" src="/user.png" alt="" />
-              <div className="h-2 w-2 rounded-3xl bg-green-600 absolute right-1 bottom-1"></div>
-            </div>
-          </div>
-        </div>
-      </motion.div>
+      <Header isOpen={isOpen} />
       <main className="dashboard">
         {children}
         <p className="my-7 text-gray-400 text-sm print:hidden">

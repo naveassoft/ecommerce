@@ -85,6 +85,19 @@
   .admin-header .header-wrapper {
     @apply flex justify-between w-full items-center mr-10;
   }
+  .admin-header .header-wrapper .search-bar {
+    @apply absolute right-3 text-gray-500 top-2/4 -translate-y-2/4;
+  }
+  .admin-header .header-wrapper .user-wrapper {
+    @apply flex gap-2 items-center relative cursor-pointer;
+  }
+  .admin-header .header-wrapper .active-sign {
+    @apply h-2 w-2 rounded-3xl bg-green-600 absolute right-1 bottom-1;
+  }
+  .admin-header .header-wrapper .user-controller-wrapper {
+    @apply absolute top-full right-0 bg-white w-[150px] px-5 py-7 rounded-b 
+    shadow mt-2;
+  }
   .menu_container {
     @apply flex flex-col bg-[#18222f] rounded;
   }
@@ -232,6 +245,21 @@
   }
   .login-container .social-btn {
     @apply flex gap-2 w-full items-center justify-center;
+  }
+
+  .varification-container {
+    @apply flex justify-center mt-10 text-2xl font-medium 
+    items-center gap-2 bg-white;
+  }
+  .varification-container.success {
+    @apply text-green-400;
+  }
+  .varification-container.unsuccess {
+    @apply text-red-400;
+  }
+
+  .forgot-password-form {
+    @apply w-[420px] mx-auto mt-10 border rounded hover:shadow-lg p-6 space-y-4;
   }
 }
 

@@ -1,7 +1,30 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 const Store = () => {
   const [alert, setAlert] = useState({ msg: "", type: "" });
+  const [user, setUser] = useState(null);
+  const [redirect, setRedirect] = useState("/");
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const token = sessionStorage.getItem("token");
+        if (token) {
+          const res = await fetch(`/api/login?token=${token}`);
+          const result = await res.json();
+          if (res.ok) {
+            setUser(result.user);
+            sessionStorage.setItem("token", result.token);
+          } else throw result;
+        }
+      } catch (error) {
+        setUser(null);
+        sessionStorage.removeItem("token");
+      }
+      setLoading(false);
+    })();
+  }, []);
 
   async function fetchData(url) {
     try {
@@ -49,6 +72,11 @@ const Store = () => {
     fetchData,
     deleteData,
     addOrEditData,
+    user,
+    setUser,
+    redirect,
+    setRedirect,
+    loading,
   };
 };
 

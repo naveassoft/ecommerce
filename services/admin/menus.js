@@ -195,3 +195,34 @@ export const menus = [
     ],
   },
 ];
+
+export const vendorMenu = [
+  {
+    path: "/#",
+    name: "Products",
+    icon: <RiProductHuntFill />,
+    highlight: ["/admin/product", "/admin/product/add-product"],
+    subRoutes: [
+      {
+        path: "/admin/product",
+        name: "All Products",
+      },
+      {
+        path: "/admin/product/addproduct",
+        name: "Add Product",
+      },
+    ],
+  },
+  {
+    path: "/#",
+    name: "Coupon",
+    icon: <AiFillGift />,
+    highlight: ["/admin/coupon"],
+    subRoutes: [
+      {
+        path: "/admin/coupon",
+        name: "Coupon Code",
+      },
+    ],
+  },
+];

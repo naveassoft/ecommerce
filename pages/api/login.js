@@ -1,13 +1,21 @@
-import { loginUser } from "../../services/admin/server/login";
+import {
+  getUser,
+  loginUser,
+  signUpUser,
+} from "../../services/admin/server/login";
 
 export default async function handler(req, res) {
   switch (req.method) {
+    case "GET":
+      getUser(req, res);
+      break;
+
     case "POST":
       loginUser(req, res);
       break;
 
     case "PUT":
-      // updateNews(req, res, news);
+      signUpUser(req, res);
       break;
 
     default:
