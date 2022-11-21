@@ -88,7 +88,8 @@ const AddProduct = () => {
 
     data.description = description.current?.value;
     data.main_image = data.main_image[0];
-    data.created_by = 2;
+    data.created_by = store.user.id;
+    data.user_type = store.user.user_role;
     const formData = new FormData();
     Object.entries(data).forEach(([key, value]) => {
       if (value) {

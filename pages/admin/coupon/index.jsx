@@ -31,7 +31,7 @@ const DCupon = () => {
     (async function () {
       if (store) {
         const { data, error } = await store?.fetchData(
-          `/api/coupon?home=true&limit=${limit}&page=${page}`
+          `/api/coupon?limit=${limit}&page=${page}&user_id=${store.user.id}&user_type=${store.user.user_role}`
         );
         if (data) {
           setCoupon(data.data);
@@ -44,7 +44,7 @@ const DCupon = () => {
   async function deleteCoupon(id) {
     setLoading(true);
     const { error, message } = await store?.deleteData(
-      `/api/coupon?id=${id}&user=${store.user.id}`
+      `/api/coupon?id=${id}&user=${store.user.id}&user_type=${store.user.user_role}`
     );
     if (!error) {
       store?.setAlert({ msg: message, type: "success" });

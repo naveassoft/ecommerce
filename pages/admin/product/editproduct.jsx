@@ -103,6 +103,7 @@ const EditProduct = () => {
     if (!product) return;
     setLoading(true);
     data.user_id = store.user.id;
+    data.user_type = store.user.user_role;
     //find the category, sub category and pro sub name base on their ids;
     if (data.category_id) {
       data.category_name = category?.find(

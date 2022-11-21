@@ -13,12 +13,17 @@ function sendSpecifiqData(req, res, name, query) {
   const limit = req.query.limit || 10;
   const page = parseInt(req.query.page || 0) * limit;
   let sql = "";
+  let count = "";
   if (name && query) {
     sql = `SELECT * FROM product WHERE ${name} = '${query}' ORDER BY created_at DESC LIMIT ${page}, ${limit}`;
+    count = "SELECT COUNT(id) FROM product";
+  } else if (req.query.user_type === "vendor") {
+    sql = `SELECT * FROM product WHERE created_by = '${req.query.user_id}' AND user_type = '${req.query.user_type}' ORDER BY created_at DESC LIMIT ${page}, ${limit}`;
+    count = `SELECT COUNT(id) FROM product WHERE created_by = '${req.query.user_id}' AND user_type = '${req.query.user_type}'`;
   } else {
     sql = `SELECT * FROM product ORDER BY created_at DESC LIMIT ${page}, ${limit}`;
+    count = "SELECT COUNT(id) FROM product";
   }
-  const count = "SELECT COUNT(id) FROM product";
   getDateFromDB(res, sql, count);
 }
 
@@ -52,6 +57,7 @@ export function getProduct(req, res) {
 
 const ProductSchema = Joi.object({
   created_by: Joi.number().integer().required(),
+  user_type: Joi.string().valid("vendor", "owner", "uploader").required(),
   created_at: Joi.date().required(),
   name: Joi.string().required(),
   brand: Joi.string().required(),
@@ -87,10 +93,10 @@ export async function postProduct(req, res) {
     if (error || !req.files.main_image || !req.files.features_img) {
       return resError(req, res, "Error occured when image updlading");
     }
-    if (!req.body.user_id) {
+    if (!req.body.user_id && !req.body.user_type) {
       return errorHandler(res, { message: "Forbiden", status: 403 });
     }
-    varifyUser(res, req.body.user_id, () => {
+    varifyUser(res, req.body.user_id, req.body.user_type, () => {
       delete req.body.user_id;
       req.body.created_at = new Date();
       req.body.main_image = req.files.main_image[0].filename;
@@ -141,10 +147,10 @@ export async function deleteProduct(req, res) {
     if (error) {
       return resError(req, res, "Error occured when parsing body");
     }
-    if (!req.body.user_id) {
+    if (!req.body.user_id && !req.body.user_type) {
       return errorHandler(res, { message: "Forbiden", status: 403 });
     }
-    varifyUser(res, req.body.user_id, () => {
+    varifyUser(res, req.body.user_id, req.body.user_type, () => {
       const sql = `DELETE FROM product WHERE id=${req.body.id}`;
       mySql.query(sql, (err) => {
         if (err) {
@@ -174,11 +180,11 @@ export async function updateProduct(req, res) {
         message: "Error occured when image updlading",
       });
     }
-    if (!req.body.user_id) {
+    if (!req.body.user_id && !req.body.user_type) {
       return errorHandler(res, { message: "Forbiden", status: 403 });
     }
 
-    varifyUser(res, req.body.user_id, () => {
+    varifyUser(res, req.body.user_id, req.body.user_type, () => {
       delete req.body.user_id;
 
       if (Object.keys(req.body).length < 2) {

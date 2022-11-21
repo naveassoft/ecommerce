@@ -13,6 +13,7 @@ const AddCuppon = () => {
   async function onsubmit(data) {
     setLoading(true);
     data.user_id = store.user.id;
+    data.user_type = store.user.user_role;
     try {
       const res = await fetch("/api/coupon", {
         method: "POST",

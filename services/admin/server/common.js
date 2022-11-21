@@ -31,8 +31,13 @@ export function varifyOwner(res, user_id, callback) {
   });
 }
 
-export function varifyUser(res, user_id, callback) {
-  const sql = `SELECT id, user_role FROM user WHERE id = '${user_id}'`;
+export function varifyUser(res, user_id, user_type, callback) {
+  let sql = "";
+  if (user_type === "vendor") {
+    sql = `SELECT id, user_role FROM vandor WHERE id = '${user_id}'`;
+  } else {
+    sql = `SELECT id, user_role FROM user WHERE id = '${user_id}'`;
+  }
   mySql.query(sql, (err, result) => {
     if (err) return errorHandler(res, { message: err.sqlMessage });
     if (!result.length || !/owner|uploader|vendor/.test(result[0].user_role)) {

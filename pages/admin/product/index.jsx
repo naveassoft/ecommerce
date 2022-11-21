@@ -32,7 +32,7 @@ const Products = () => {
     (async function () {
       if (store) {
         const { data, error } = await store?.fetchData(
-          `/api/product?limit=${limit}&page=${page}`
+          `/api/product?limit=${limit}&page=${page}&user_id=${store.user.id}&user_type=${store.user.user_role}`
         );
         if (data) {
           setProducts(data.data);
@@ -50,6 +50,7 @@ const Products = () => {
       img.push(...JSON.parse(features_img));
       const formData = new FormData();
       formData.append("user_id", store.user.id);
+      formData.append("user_type", store.user.user_role);
       formData.append("id", id);
       formData.append("image", JSON.stringify(img));
       const { error, message } = await store?.deleteData(
