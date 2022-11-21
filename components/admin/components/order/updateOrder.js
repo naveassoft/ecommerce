@@ -21,6 +21,7 @@ export async function updateOrder(status, item, store, setUpdate) {
     const data = { status };
     data.user = store.user.id;
     data.customer_id = item.customer_id;
+    data.vendor_id = item.vandor_id;
     data.order_status = item.status;
     const products = [];
     JSON.parse(item.product_info).forEach((product) => {

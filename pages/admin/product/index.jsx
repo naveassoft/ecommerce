@@ -78,72 +78,76 @@ const Products = () => {
             setLimit={setLimit}
           />
 
-          <table>
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>Image</th>
-                <th>Name</th>
-                <th>Sku</th>
-                <th>Price</th>
-                <th>Stock</th>
-              </tr>
-            </thead>
-            <tbody>
-              {products && products.length ? (
-                products.map((item, i) => (
-                  <React.Fragment key={i}>
-                    <tr>
-                      <td
-                        className={`sn-item ${
-                          i % 2 === 0 ? "bg-[#f1f1f1]" : "bg-[#f9f9f9]"
-                        }`}
-                        onClick={() => handleAction(i)}
-                      >
-                        {showAction !== i ? (
-                          <HiPlusCircle />
-                        ) : (
-                          <HiMinusCircle />
-                        )}
-                        <span>{item.id}</span>
-                      </td>
-                      <td>
-                        <img
-                          className="h-5 object-contain"
-                          src={`/assets/${item.main_image}`}
-                          alt=""
+          <div className="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Image</th>
+                  <th>Name</th>
+                  <th>Sku</th>
+                  <th>Price</th>
+                  <th>Stock</th>
+                </tr>
+              </thead>
+              <tbody>
+                {products && products.length ? (
+                  products.map((item, i) => (
+                    <React.Fragment key={i}>
+                      <tr>
+                        <td
+                          className={`${
+                            i % 2 === 0 ? "bg-[#f1f1f1]" : "bg-[#f9f9f9]"
+                          }`}
+                          onClick={() => handleAction(i)}
+                        >
+                          <div className={`sn-item`}>
+                            {showAction !== i ? (
+                              <HiPlusCircle />
+                            ) : (
+                              <HiMinusCircle />
+                            )}
+                            <span>{item.id}</span>
+                          </div>
+                        </td>
+                        <td>
+                          <img
+                            className="h-5 object-contain"
+                            src={`/assets/${item.main_image}`}
+                            alt=""
+                          />
+                        </td>
+                        <td>{item.name}</td>
+                        <td>{item.sku}</td>
+                        <td>{item.price}</td>
+                        <td>
+                          <p className={item.stock < 5 ? "text-red-500" : ""}>
+                            {item.stock}
+                          </p>
+                        </td>
+                      </tr>
+                      {showAction === i && (
+                        <DocumentHandler
+                          colSpan={5}
+                          editpage={`/admin/product/editproduct?id=${item.id}`}
+                          deleteHandler={() =>
+                            deleteProduct(
+                              item.id,
+                              item.main_image,
+                              item.features_img
+                            )
+                          }
+                          loading={loading}
                         />
-                      </td>
-                      <td>{item.name}</td>
-                      <td>{item.sku}</td>
-                      <td>{item.price}</td>
-                      <td>
-                        <p className={item.stock < 5 ? "text-red-500" : ""}>
-                          {item.stock}
-                        </p>
-                      </td>
-                    </tr>
-                    {showAction === i && (
-                      <DocumentHandler
-                        colSpan={5}
-                        editpage={`/admin/product/editproduct?id=${item.id}`}
-                        deleteHandler={() =>
-                          deleteProduct(
-                            item.id,
-                            item.main_image,
-                            item.features_img
-                          )
-                        }
-                        loading={loading}
-                      />
-                    )}
-                  </React.Fragment>
-                ))
-              ) : (
-                <NoDataFount colSpan={5} />
-              )}
-            </tbody>
-          </table>
+                      )}
+                    </React.Fragment>
+                  ))
+                ) : (
+                  <NoDataFount colSpan={5} />
+                )}
+              </tbody>
+            </table>
+          </div>
           <MainPagesFooterPart
             count={count}
             limit={limit}

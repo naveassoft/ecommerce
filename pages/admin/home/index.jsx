@@ -78,60 +78,64 @@ const DCategory = () => {
             setLimit={setLimit}
           />
 
-          <table className="w-3/4 mx-auto">
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>PRIORITY</th>
-                <th>IMAGE</th>
-                <th>CATEGORY NAME</th>
-              </tr>
-            </thead>
-            <tbody>
-              {category && category.length ? (
-                category.map((item, i) => (
-                  <React.Fragment key={i}>
-                    <tr>
-                      <td
-                        onClick={() => handleAction(i)}
-                        className={`flex items-center gap-1 ${
-                          i % 2 === 0 ? "bg-[#f1f1f1]" : "bg-[#f9f9f9]"
-                        }`}
-                      >
-                        {showAction !== i ? (
-                          <HiPlusCircle />
-                        ) : (
-                          <HiMinusCircle />
-                        )}
-                        <span>{item.id}</span>
-                      </td>
-                      <td>{item.priority}</td>
-                      <td>
-                        <img
-                          className="h-5"
-                          src={`/assets/${item.image}`}
-                          alt=""
+          <div className="table-container">
+            <table className="w-3/4 mx-auto">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>PRIORITY</th>
+                  <th>IMAGE</th>
+                  <th>CATEGORY NAME</th>
+                </tr>
+              </thead>
+              <tbody>
+                {category && category.length ? (
+                  category.map((item, i) => (
+                    <React.Fragment key={i}>
+                      <tr>
+                        <td
+                          onClick={() => handleAction(i)}
+                          className={`${
+                            i % 2 === 0 ? "bg-[#f1f1f1]" : "bg-[#f9f9f9]"
+                          }`}
+                        >
+                          <div className="flex items-center gap-1">
+                            {showAction !== i ? (
+                              <HiPlusCircle />
+                            ) : (
+                              <HiMinusCircle />
+                            )}
+                            <span>{item.id}</span>
+                          </div>
+                        </td>
+                        <td>{item.priority}</td>
+                        <td>
+                          <img
+                            className="h-5"
+                            src={`/assets/${item.image}`}
+                            alt=""
+                          />
+                        </td>
+                        <td>{item.name}</td>
+                      </tr>
+                      {showAction === i && (
+                        <DocumentHandler
+                          colSpan={4}
+                          editpage={`/admin/home/editcategory?id=${item.id}`}
+                          loading={loading}
+                          deleteHandler={() =>
+                            deleteCategory(item.id, item.image)
+                          }
                         />
-                      </td>
-                      <td>{item.name}</td>
-                    </tr>
-                    {showAction === i && (
-                      <DocumentHandler
-                        colSpan={4}
-                        editpage={`/admin/home/editcategory?id=${item.id}`}
-                        loading={loading}
-                        deleteHandler={() =>
-                          deleteCategory(item.id, item.image)
-                        }
-                      />
-                    )}
-                  </React.Fragment>
-                ))
-              ) : (
-                <NoDataFount colSpan={4} />
-              )}
-            </tbody>
-          </table>
+                      )}
+                    </React.Fragment>
+                  ))
+                ) : (
+                  <NoDataFount colSpan={4} />
+                )}
+              </tbody>
+            </table>
+          </div>
           <MainPagesFooterPart
             count={count}
             page={page}

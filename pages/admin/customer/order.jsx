@@ -178,77 +178,84 @@ const DOrder = () => {
             setLimit={setLimit}
           />
 
-          <table>
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>DATE</th>
-                <th>ORDER</th>
-                <th>INVOICE</th>
-                <th>NAME</th>
-                <th>STATUS</th>
-              </tr>
-            </thead>
-            <tbody>
-              {orders && orders.length ? (
-                orders.map((item, i) => (
-                  <React.Fragment key={i}>
-                    <tr>
-                      <td
-                        onClick={() => handleAction(i)}
-                        className={`${
-                          i % 2 === 0 ? "bg-[#f1f1f1]" : "bg-[#f9f9f9]"
-                        }`}
-                      >
-                        <div className="sn-item">
-                          {showAction !== i ? (
-                            <HiPlusCircle />
-                          ) : (
-                            <HiMinusCircle />
-                          )}
-                          <span>{item.id}</span>
-                        </div>
-                      </td>
-                      <td>
-                        <MySqlDate date={item.created_at} />
-                      </td>
-                      <td>{item.order_id}</td>
-                      <td>{item.invoice_id}</td>
-                      <td>{item.customer_name}</td>
-                      <td>
-                        <select
-                          onChange={(e) =>
-                            updateOrder(e.target.value, item, store, setUpdate)
-                          }
+          <div className="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>DATE</th>
+                  <th>ORDER</th>
+                  <th>INVOICE</th>
+                  <th>NAME</th>
+                  <th>STATUS</th>
+                </tr>
+              </thead>
+              <tbody>
+                {orders && orders.length ? (
+                  orders.map((item, i) => (
+                    <React.Fragment key={i}>
+                      <tr>
+                        <td
+                          onClick={() => handleAction(i)}
+                          className={`${
+                            i % 2 === 0 ? "bg-[#f1f1f1]" : "bg-[#f9f9f9]"
+                          }`}
                         >
-                          {filterOpt.slice(1, filterOpt.length).map((opt) => (
-                            <option
-                              selected={item.status === opt.value}
-                              key={opt.value}
-                              value={opt.value}
-                            >
-                              {opt.txt}
-                            </option>
-                          ))}
-                        </select>
-                      </td>
-                    </tr>
-                    {showAction === i && (
-                      <DocumentHandler
-                        editpage={`/admin/customer/vieworder?id=${item.id}`}
-                        deleteHandler={() => deleteOrder(item.id)}
-                        colSpan={6}
-                        title="view"
-                        loading={loading}
-                      />
-                    )}
-                  </React.Fragment>
-                ))
-              ) : (
-                <NoDataFount colSpan={6} />
-              )}
-            </tbody>
-          </table>
+                          <div className="sn-item">
+                            {showAction !== i ? (
+                              <HiPlusCircle />
+                            ) : (
+                              <HiMinusCircle />
+                            )}
+                            <span>{item.id}</span>
+                          </div>
+                        </td>
+                        <td>
+                          <MySqlDate date={item.created_at} />
+                        </td>
+                        <td>{item.order_id}</td>
+                        <td>{item.invoice_id}</td>
+                        <td>{item.customer_name}</td>
+                        <td>
+                          <select
+                            onChange={(e) =>
+                              updateOrder(
+                                e.target.value,
+                                item,
+                                store,
+                                setUpdate
+                              )
+                            }
+                          >
+                            {filterOpt.slice(1, filterOpt.length).map((opt) => (
+                              <option
+                                selected={item.status === opt.value}
+                                key={opt.value}
+                                value={opt.value}
+                              >
+                                {opt.txt}
+                              </option>
+                            ))}
+                          </select>
+                        </td>
+                      </tr>
+                      {showAction === i && (
+                        <DocumentHandler
+                          editpage={`/admin/customer/vieworder?id=${item.id}`}
+                          deleteHandler={() => deleteOrder(item.id)}
+                          colSpan={6}
+                          title="view"
+                          loading={loading}
+                        />
+                      )}
+                    </React.Fragment>
+                  ))
+                ) : (
+                  <NoDataFount colSpan={6} />
+                )}
+              </tbody>
+            </table>
+          </div>
           <MainPagesFooterPart
             count={count}
             limit={limit}

@@ -37,37 +37,39 @@ const ImportantLinks = () => {
             </div>
           </div>
 
-          <table>
-            <thead>
-              <tr>
-                <th>LOGO</th>
-                <th>EMAIL</th>
-                <th className="flex justify-center">
-                  <p>ACTION</p>
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td className={`sn-item bg-[#f1f1f1]`}>
-                  {links && (
-                    <img
-                      className="h-5"
-                      src={`/assets/${links[9].info}`}
-                      alt=""
-                    />
-                  )}
-                </td>
+          <div className="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>LOGO</th>
+                  <th>EMAIL</th>
+                  <th className="flex justify-center">
+                    <p>ACTION</p>
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td className={`sn-item bg-[#f1f1f1]`}>
+                    {links && (
+                      <img
+                        className="h-5"
+                        src={`/assets/${links[9].info}`}
+                        alt=""
+                      />
+                    )}
+                  </td>
 
-                <td>{links ? links[1].info : ""}</td>
-                <td className="flex justify-center">
-                  <Link href="/admin/footer/editlink">
-                    <FaEdit className="text-orange-400 w-5" />
-                  </Link>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+                  <td>{links ? links[1].info : ""}</td>
+                  <td className="flex justify-center">
+                    <Link href="/admin/footer/editlink">
+                      <FaEdit className="text-orange-400 w-5" />
+                    </Link>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
           <div className="flex justify-between mt-6">
             <p className="text-sm">Showing 1 to 1 of 1 entries</p>
             <div className="flex gap-1">

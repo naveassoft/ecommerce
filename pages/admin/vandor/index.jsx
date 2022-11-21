@@ -77,66 +77,69 @@ const Vandor = () => {
             setLimit={setLimit}
           />
 
-          <table>
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>NAME</th>
-                <th>EMAIL</th>
-                <th>SHOP NAME</th>
-                <th>SHOP LOGO</th>
-              </tr>
-            </thead>
-            <tbody>
-              {vandor && vandor.length ? (
-                vandor.map((item, i) => (
-                  <React.Fragment key={i}>
-                    <tr>
-                      <td
-                        className={`sn-item ${
-                          i % 2 === 0 ? "bg-[#f1f1f1]" : "bg-[#f9f9f9]"
-                        }`}
-                        onClick={() => handleAction(i)}
-                      >
-                        {showAction !== i ? (
-                          <HiPlusCircle />
-                        ) : (
-                          <HiMinusCircle />
-                        )}
-                        <span>{item.id}</span>
-                      </td>
-                      <td>{item.name}</td>
-                      <td>{item.email}</td>
-                      <td>{item.shop_name}</td>
-                      <td>
-                        {item.shop_logo ? (
-                          <img
-                            className="h-5 object-contain"
-                            src={`/assets/${item.shop_logo}`}
-                            alt=""
-                          />
-                        ) : (
-                          <span>No Image</span>
-                        )}
-                      </td>
-                    </tr>
-                    {showAction === i && (
-                      <DocumentHandler
-                        colSpan={5}
-                        editpage={`/admin/vandor/editvandor?id=${item.id}`}
-                        deleteHandler={() =>
-                          deleteVandor(item.id, item.shop_logo)
-                        }
-                        loading={loading}
-                      />
-                    )}
-                  </React.Fragment>
-                ))
-              ) : (
-                <NoDataFount colSpan={5} />
-              )}
-            </tbody>
-          </table>
+          <div className="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>NAME</th>
+                  <th>EMAIL</th>
+                  <th>SHOP NAME</th>
+                  <th>SHOP LOGO</th>
+                </tr>
+              </thead>
+              <tbody>
+                {vandor && vandor.length ? (
+                  vandor.map((item, i) => (
+                    <React.Fragment key={i}>
+                      <tr>
+                        <td
+                          className={`sn-item ${
+                            i % 2 === 0 ? "bg-[#f1f1f1]" : "bg-[#f9f9f9]"
+                          }`}
+                          onClick={() => handleAction(i)}
+                        >
+                          {showAction !== i ? (
+                            <HiPlusCircle />
+                          ) : (
+                            <HiMinusCircle />
+                          )}
+                          <span>{item.id}</span>
+                        </td>
+                        <td>{item.name}</td>
+                        <td>{item.email}</td>
+                        <td>{item.shop_name}</td>
+                        <td>
+                          {item.shop_logo ? (
+                            <img
+                              className="h-5 object-contain"
+                              src={`/assets/${item.shop_logo}`}
+                              alt=""
+                            />
+                          ) : (
+                            <span>No Image</span>
+                          )}
+                        </td>
+                      </tr>
+                      {showAction === i && (
+                        <DocumentHandler
+                          colSpan={5}
+                          editpage={`/admin/vandor/editvandor?id=${item.id}`}
+                          deleteHandler={() =>
+                            deleteVandor(item.id, item.shop_logo)
+                          }
+                          loading={loading}
+                        />
+                      )}
+                    </React.Fragment>
+                  ))
+                ) : (
+                  <NoDataFount colSpan={5} />
+                )}
+              </tbody>
+            </table>
+          </div>
+
           <MainPagesFooterPart
             count={count}
             limit={limit}

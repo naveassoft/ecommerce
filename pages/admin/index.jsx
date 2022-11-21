@@ -1,11 +1,22 @@
-import React from "react";
-import { FaHome } from "react-icons/fa";
-import { GiWorld } from "react-icons/gi";
-import { MdOutlineLocalShipping } from "react-icons/md";
-import { BsFillBagCheckFill, BsHandbag } from "react-icons/bs";
 import DashboardLayout from "../../components/admin/common/DashboardLayout";
+import { FaHome } from "react-icons/fa";
+import React, { useEffect, useState } from "react";
+import useStore from "../../components/context/useStore";
+import Report from "../../components/admin/dashboard/Report";
 
 const Dashboard = () => {
+  const [data, setData] = useState(null);
+  const store = useStore();
+
+  useEffect(() => {
+    (async function () {
+      const { data, error } = await store?.fetchData(`/api/dashboard`);
+      if (data) {
+        setData(data);
+      } else store?.setAlert({ msg: error, type: "error" });
+    })();
+  }, []);
+
   return (
     <DashboardLayout>
       <div className="dashboar-wrapper">
@@ -17,87 +28,68 @@ const Dashboard = () => {
             <h3>Dashboard</h3>
           </div>
         </div>
+        <Report />
 
-        <div className="report_wrapper">
-          <div className="bg-[#17A2B8]">
-            <div className="flex items-center">
-              <GiWorld />
-            </div>
-            <div>
-              <h3>TOTAL PRODUCTS</h3>
-              <p className="text-2xl font-semibold">590</p>
-              <p>24% higher previous month</p>
-            </div>
+        <div className="dashboard-data">
+          <div className="item col-span-2">
+            <h4>Top Sold Product</h4>
+            {data &&
+              data?.topProduct.map((item) => (
+                <div key={item.id}>
+                  <img
+                    className="h-12 rounded-full"
+                    src={`/assets/${item.main_image}`}
+                    alt=""
+                  />
+                  <h3>{item.name.slice(0, 50)}</h3>
+                </div>
+              ))}
           </div>
-          <div className="bg-[#6f42c1]">
-            <div className="flex items-center">
-              <BsHandbag />
-            </div>
-            <div>
-              <h3>TODAY's SALES</h3>
-              <p className="text-2xl font-semibold">$329,291</p>
-              <p>24% higher yesterday</p>
-            </div>
+          <div className="item">
+            <h4>Top Customer</h4>
+            {data &&
+              data?.topCustomer.map((item) => (
+                <div key={item.id}>
+                  <img
+                    className="h-12 rounded-full"
+                    src={item.profile ? `/assets/${item.profile}` : "/user.png"}
+                    alt=""
+                  />
+                  <h3>{item.name}</h3>
+                </div>
+              ))}
           </div>
-          <div className="bg-[#1CAF9A]">
-            <div className="flex items-center">
-              <BsFillBagCheckFill />
-            </div>
-            <div>
-              <h3>TODAY'S ORDER</h3>
-              <p className="text-2xl font-semibold">220</p>
-              <p>2% higher yesterday</p>
-            </div>
+          <div className="item">
+            <h4>Top Saler</h4>
+            {data &&
+              data?.topSaler.map((item) => (
+                <div key={item.id}>
+                  <img
+                    className="h-12 rounded-full"
+                    src={
+                      item.shop_logo
+                        ? `/assets/${item.shop_logo}`
+                        : "/shop-image.jpg"
+                    }
+                    alt=""
+                  />
+                  <h3>{item.name.slice(0, 70)}</h3>
+                </div>
+              ))}
           </div>
-          <div className="bg-[#0866C6]">
-            <div className="flex items-center">
-              <MdOutlineLocalShipping />
-            </div>
-            <div>
-              <h3>PENDING ORDER</h3>
-              <p className="text-2xl font-semibold">20</p>
-              <p>See the orders</p>
-            </div>
-          </div>
-          <div className="bg-[#c62408a5]">
-            <div className="flex items-center">
-              <MdOutlineLocalShipping />
-            </div>
-            <div>
-              <h3>CANCELED ORDER</h3>
-              <p className="text-2xl font-semibold">20</p>
-              <p>24% higher yesterday</p>
-            </div>
-          </div>
-          <div className="bg-[#c69608d7]">
-            <div className="flex items-center">
-              <MdOutlineLocalShipping />
-            </div>
-            <div>
-              <h3>LOW STOCK PRODUCT</h3>
-              <p className="text-2xl font-semibold">20</p>
-              <p>24% higher yesterday</p>
-            </div>
-          </div>
-          <div className="bg-[#18c608cd]">
-            <div className="flex items-center">
-              <MdOutlineLocalShipping />
-            </div>
-            <div>
-              <h3>TOP SOLD PRODUCT</h3>
-              <p className="text-2xl font-semibold">20</p>
-              <p>24% higher yesterday</p>
-            </div>
-          </div>
-          <div className="bg-[#1CAF9A]">
-            <div className="flex items-center">
-              <MdOutlineLocalShipping />
-            </div>
-            <div>
-              <h3>TOTAL VANDORS</h3>
-              <p className="text-2xl font-semibold">20</p>
-              <p>24% higher yesterday</p>
-            </div>
+          <div className="item">
+            <h4>Top Rated Product</h4>
+            {data &&
+              data?.topRatedProduct.map((item) => (
+                <div key={item.id}>
+                  <img
+                    className="h-12 rounded-full"
+                    src={`/assets/${item.main_image}`}
+                    alt=""
+                  />
+                  <h3>{item.name.slice(0, 30)}</h3>
+                </div>
+              ))}
           </div>
         </div>
       </div>

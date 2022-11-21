@@ -69,58 +69,62 @@ const ADV = () => {
             setLimit={setLimit}
           />
 
-          <table>
-            <thead>
-              <tr>
-                <th>SN</th>
-                <th>CATEGORY</th>
-                <th>SUB CATEGORY</th>
-                <th>IMAGE</th>
-              </tr>
-            </thead>
-            <tbody>
-              {adv && adv.length ? (
-                adv.map((item, i) => (
-                  <React.Fragment key={i}>
-                    <tr>
-                      <td
-                        onClick={() => handleAction(i)}
-                        className={`flex items-center gap-1 py-7 px-5 ${
-                          i % 2 === 0 ? "bg-[#f1f1f1]" : "bg-[#f9f9f9]"
-                        }`}
-                      >
-                        {showAction !== i ? (
-                          <HiPlusCircle />
-                        ) : (
-                          <HiMinusCircle />
-                        )}
-                        <span>{item.id}</span>
-                      </td>
-                      <td>{item.category_name}</td>
-                      <td>{item.sub_category_name || "N/A"}</td>
-                      <td>
-                        <img
-                          className="h-5"
-                          src={`/assets/${item.image}`}
-                          alt=""
+          <div className="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>SN</th>
+                  <th>CATEGORY</th>
+                  <th>SUB CATEGORY</th>
+                  <th>IMAGE</th>
+                </tr>
+              </thead>
+              <tbody>
+                {adv && adv.length ? (
+                  adv.map((item, i) => (
+                    <React.Fragment key={i}>
+                      <tr>
+                        <td
+                          onClick={() => handleAction(i)}
+                          className={`${
+                            i % 2 === 0 ? "bg-[#f1f1f1]" : "bg-[#f9f9f9]"
+                          }`}
+                        >
+                          <div className="flex items-center gap-1">
+                            {showAction !== i ? (
+                              <HiPlusCircle />
+                            ) : (
+                              <HiMinusCircle />
+                            )}
+                            <span>{item.id}</span>
+                          </div>
+                        </td>
+                        <td>{item.category_name}</td>
+                        <td>{item.sub_category_name || "N/A"}</td>
+                        <td>
+                          <img
+                            className="h-5"
+                            src={`/assets/${item.image}`}
+                            alt=""
+                          />
+                        </td>
+                      </tr>
+                      {showAction === i && (
+                        <DocumentHandler
+                          colSpan={4}
+                          deleteHandler={() => deleteAdv(item.id, item.image)}
+                          editpage={`/admin/home/adv/editadv?id=${item.id}`}
+                          loading={loading}
                         />
-                      </td>
-                    </tr>
-                    {showAction === i && (
-                      <DocumentHandler
-                        colSpan={4}
-                        deleteHandler={() => deleteAdv(item.id, item.image)}
-                        editpage={`/admin/home/adv/editadv?id=${item.id}`}
-                        loading={loading}
-                      />
-                    )}
-                  </React.Fragment>
-                ))
-              ) : (
-                <NoDataFount colSpan={4} />
-              )}
-            </tbody>
-          </table>
+                      )}
+                    </React.Fragment>
+                  ))
+                ) : (
+                  <NoDataFount colSpan={4} />
+                )}
+              </tbody>
+            </table>
+          </div>
           <MainPagesFooterPart
             count={count}
             limit={limit}

@@ -68,56 +68,62 @@ const DSlider = () => {
             setLimit={setLimit}
           />
 
-          <table>
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>IMAGE</th>
-                <th>CATEGORY</th>
-              </tr>
-            </thead>
-            <tbody>
-              {slider && slider.length ? (
-                slider.map((item, i) => (
-                  <React.Fragment key={i}>
-                    <tr>
-                      <td
-                        onClick={() => handleAction(i)}
-                        className={`flex items-center gap-1 py-7 px-5 ${
-                          i % 2 === 0 ? "bg-[#f1f1f1]" : "bg-[#f9f9f9]"
-                        }`}
-                      >
-                        {showAction !== i ? (
-                          <HiPlusCircle />
-                        ) : (
-                          <HiMinusCircle />
-                        )}
-                        <span>{item.id}</span>
-                      </td>
-                      <td>
-                        <img
-                          className="h-5"
-                          src={`/assets/${item.image}`}
-                          alt=""
+          <div className="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>IMAGE</th>
+                  <th>CATEGORY</th>
+                </tr>
+              </thead>
+              <tbody>
+                {slider && slider.length ? (
+                  slider.map((item, i) => (
+                    <React.Fragment key={i}>
+                      <tr>
+                        <td
+                          onClick={() => handleAction(i)}
+                          className={`${
+                            i % 2 === 0 ? "bg-[#f1f1f1]" : "bg-[#f9f9f9]"
+                          }`}
+                        >
+                          <div className="flex items-center gap-1">
+                            {showAction !== i ? (
+                              <HiPlusCircle />
+                            ) : (
+                              <HiMinusCircle />
+                            )}
+                            <span>{item.id}</span>
+                          </div>
+                        </td>
+                        <td>
+                          <img
+                            className="h-5"
+                            src={`/assets/${item.image}`}
+                            alt=""
+                          />
+                        </td>
+                        <td>{item.category_name}</td>
+                      </tr>
+                      {showAction === i && (
+                        <DocumentHandler
+                          colSpan={3}
+                          editpage={`/admin/home/slider/editslider?id=${item.id}`}
+                          loading={loading}
+                          deleteHandler={() =>
+                            deleteSlider(item.id, item.image)
+                          }
                         />
-                      </td>
-                      <td>{item.category_name}</td>
-                    </tr>
-                    {showAction === i && (
-                      <DocumentHandler
-                        colSpan={3}
-                        editpage={`/admin/home/slider/editslider?id=${item.id}`}
-                        loading={loading}
-                        deleteHandler={() => deleteSlider(item.id, item.image)}
-                      />
-                    )}
-                  </React.Fragment>
-                ))
-              ) : (
-                <NoDataFount colSpan={3} />
-              )}
-            </tbody>
-          </table>
+                      )}
+                    </React.Fragment>
+                  ))
+                ) : (
+                  <NoDataFount colSpan={3} />
+                )}
+              </tbody>
+            </table>
+          </div>
           <MainPagesFooterPart
             count={count}
             limit={limit}

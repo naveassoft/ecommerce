@@ -78,7 +78,7 @@ export function MainPagesFooterPart({
   setPage,
 }) {
   return (
-    <div className="flex justify-between mt-6">
+    <div className="flex flex-col md:flex-row gap-3 justify-between mt-6 items-center">
       <p className="text-sm">
         Showing {page * limit} to {showingData + page * limit} of {count}{" "}
         entries
@@ -150,11 +150,11 @@ export function MySqlDate({ date }) {
   return <p>{datetime}</p>;
 }
 
-export function Amount({ value }) {
+export function Amount({ value, page }) {
   return (
     <p>
-      <span className="text-3xl">৳</span>
-      <span className="text-lg">{value}</span>
+      <span className={`${page ? "text-4xl" : "text-3xl"}`}>৳</span>
+      <span className={`${page ? "text-2xl" : "text-lg"}`}>{value}</span>
     </p>
   );
 }

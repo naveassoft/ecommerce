@@ -99,53 +99,58 @@ const DUser = () => {
             setLimit={setLimit}
           />
 
-          <table>
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>NAME</th>
-                <th>EMAIL</th>
-                <th>Role</th>
-              </tr>
-            </thead>
-            <tbody>
-              {user && user.length ? (
-                user.map((item, i) => (
-                  <React.Fragment key={i}>
-                    <tr>
-                      <td
-                        className={`sn-item ${
-                          i % 2 === 0 ? "bg-[#f1f1f1]" : "bg-[#f9f9f9]"
-                        }`}
-                        onClick={() => handleAction(i)}
-                      >
-                        {showAction !== i ? (
-                          <HiPlusCircle />
-                        ) : (
-                          <HiMinusCircle />
-                        )}
-                        <span>{item.id}</span>
-                      </td>
-                      <td>{item.name}</td>
-                      <td>{item.email}</td>
-                      <td>{item.user_role}</td>
-                      <td>{item.user_role}</td>
-                    </tr>
-                    {showAction === i && (
-                      <DocumentHandler
-                        colSpan={4}
-                        editpage={`/admin/user/edituser?id=${item.id}`}
-                        deleteHandler={() => deleteUser(item.id, item.profile)}
-                        loading={loading}
-                      />
-                    )}
-                  </React.Fragment>
-                ))
-              ) : (
-                <NoDataFount colSpan={4} />
-              )}
-            </tbody>
-          </table>
+          <div className="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>NAME</th>
+                  <th>EMAIL</th>
+                  <th>Role</th>
+                </tr>
+              </thead>
+              <tbody>
+                {user && user.length ? (
+                  user.map((item, i) => (
+                    <React.Fragment key={i}>
+                      <tr>
+                        <td
+                          className={`sn-item ${
+                            i % 2 === 0 ? "bg-[#f1f1f1]" : "bg-[#f9f9f9]"
+                          }`}
+                          onClick={() => handleAction(i)}
+                        >
+                          {showAction !== i ? (
+                            <HiPlusCircle />
+                          ) : (
+                            <HiMinusCircle />
+                          )}
+                          <span>{item.id}</span>
+                        </td>
+                        <td>{item.name}</td>
+                        <td>{item.email}</td>
+                        <td>{item.user_role}</td>
+                        <td>{item.user_role}</td>
+                      </tr>
+                      {showAction === i && (
+                        <DocumentHandler
+                          colSpan={4}
+                          editpage={`/admin/user/edituser?id=${item.id}`}
+                          deleteHandler={() =>
+                            deleteUser(item.id, item.profile)
+                          }
+                          loading={loading}
+                        />
+                      )}
+                    </React.Fragment>
+                  ))
+                ) : (
+                  <NoDataFount colSpan={4} />
+                )}
+              </tbody>
+            </table>
+          </div>
+
           <MainPagesFooterPart
             count={count}
             limit={limit}

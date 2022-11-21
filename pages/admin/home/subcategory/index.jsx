@@ -70,60 +70,64 @@ const DSubCategory = () => {
             setLimit={setLimit}
           />
 
-          <table>
-            <thead className="header">
-              <tr>
-                <th>ID</th>
-                <th>IMAGE</th>
-                <th>CATEGORY</th>
-                <th>SUB CATEGORY</th>
-              </tr>
-            </thead>
-            <tbody>
-              {subcategory && subcategory.length ? (
-                subcategory.map((item, i) => (
-                  <React.Fragment key={i}>
-                    <tr>
-                      <td
-                        onClick={() => handleAction(i)}
-                        className={`flex items-center gap-1 py-7 px-5 ${
-                          i % 2 === 0 ? "bg-[#f1f1f1]" : "bg-[#f9f9f9]"
-                        }`}
-                      >
-                        {showAction !== i ? (
-                          <HiPlusCircle />
-                        ) : (
-                          <HiMinusCircle />
-                        )}
-                        <span>{item.id}</span>
-                      </td>
-                      <td>
-                        <img
-                          className="h-5"
-                          src={`/assets/${item.image}`}
-                          alt=""
+          <div className="table-container">
+            <table>
+              <thead className="header">
+                <tr>
+                  <th>ID</th>
+                  <th>IMAGE</th>
+                  <th>CATEGORY</th>
+                  <th>SUB CATEGORY</th>
+                </tr>
+              </thead>
+              <tbody>
+                {subcategory && subcategory.length ? (
+                  subcategory.map((item, i) => (
+                    <React.Fragment key={i}>
+                      <tr>
+                        <td
+                          onClick={() => handleAction(i)}
+                          className={`${
+                            i % 2 === 0 ? "bg-[#f1f1f1]" : "bg-[#f9f9f9]"
+                          }`}
+                        >
+                          <div className="flex items-center gap-1">
+                            {showAction !== i ? (
+                              <HiPlusCircle />
+                            ) : (
+                              <HiMinusCircle />
+                            )}
+                            <span>{item.id}</span>
+                          </div>
+                        </td>
+                        <td>
+                          <img
+                            className="h-5"
+                            src={`/assets/${item.image}`}
+                            alt=""
+                          />
+                        </td>
+                        <td>{item.category_name}</td>
+                        <td>{item.name}</td>
+                      </tr>
+                      {showAction === i && (
+                        <DocumentHandler
+                          colSpan={4}
+                          loading={loading}
+                          deleteHandler={() =>
+                            deleteSubCategory(item.id, item.image)
+                          }
+                          editpage={`/admin/home/subcategory/editsubcategory?id=${item.id}`}
                         />
-                      </td>
-                      <td>{item.category_name}</td>
-                      <td>{item.name}</td>
-                    </tr>
-                    {showAction === i && (
-                      <DocumentHandler
-                        colSpan={4}
-                        loading={loading}
-                        deleteHandler={() =>
-                          deleteSubCategory(item.id, item.image)
-                        }
-                        editpage={`/admin/home/subcategory/editsubcategory?id=${item.id}`}
-                      />
-                    )}
-                  </React.Fragment>
-                ))
-              ) : (
-                <NoDataFount colSpan={4} />
-              )}
-            </tbody>
-          </table>
+                      )}
+                    </React.Fragment>
+                  ))
+                ) : (
+                  <NoDataFount colSpan={4} />
+                )}
+              </tbody>
+            </table>
+          </div>
           <MainPagesFooterPart
             limit={limit}
             page={page}

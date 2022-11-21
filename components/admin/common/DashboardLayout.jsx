@@ -96,9 +96,21 @@ const DashboardLayout = ({ children }) => {
       <Header isOpen={isOpen} />
       <main className="dashboard">
         {children}
-        <p className="my-7 text-gray-400 text-sm print:hidden">
-          Copyright © 2022 All Rights Reserved.
-        </p>
+        <div className="footer">
+          <p className="">Copyright © 2022 All Rights Reserved.</p>
+          <p>
+            Powered By{" "}
+            <a
+              className="text-blue-500 font-medium"
+              href="https://navieasoft.com/"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Navieasoft
+            </a>
+          </p>
+          <p>Help? +8801636312933</p>
+        </div>
       </main>
     </div>
   );

@@ -83,7 +83,7 @@
     print:hidden;
   }
   .admin-header .header-wrapper {
-    @apply flex justify-between w-full items-center mr-10;
+    @apply flex justify-end md:justify-between w-full items-center mr-10;
   }
   .admin-header .header-wrapper .search-bar {
     @apply absolute right-3 text-gray-500 top-2/4 -translate-y-2/4;
@@ -113,7 +113,7 @@
 
   /* add form components start */
   .add-form {
-    @apply bg-white p-10 mt-10 rounded shadow;
+    @apply bg-white md:p-10 mt-10 rounded shadow;
   }
   .add-form form {
     @apply border rounded px-5 py-7 space-y-10;
@@ -121,14 +121,20 @@
   .add-form form label {
     @apply text-gray-500 ml-2 mb-3 block text-sm;
   }
+  .edit-input-container {
+    @apply flex flex-col md:flex-row gap-4 md:gap-10 items-center;
+  }
   /* add form components end */
 
   /* common styles start  */
   .container {
-    @apply p-14 bg-white rounded shadow mt-10;
+    @apply py-5 px-2 md:p-14 bg-white rounded shadow mt-10;
+  }
+  .table-container {
+    @apply overflow-auto border-x lg:border-x-0;
   }
   .container table {
-    @apply w-[80%] mx-auto;
+    @apply md:w-full lg:w-[80%] mx-auto;
   }
   .container table th,
   .container table td {
@@ -138,7 +144,7 @@
     @apply hover:bg-white;
   }
   .container table tr {
-    @apply border bg-[#ffffff] hover:bg-[#f9f9f9];
+    @apply border-y lg:border bg-[#ffffff] hover:bg-[#f9f9f9];
   }
   .container table tr .sn-item {
     @apply flex items-center gap-1 text-gray-500;
@@ -149,7 +155,7 @@
     @apply flex justify-end border px-5 py-3 mb-4;
   }
   .date-picker form {
-    @apply flex gap-2;
+    @apply flex gap-2 flex-col md:flex-row;
   }
   .date-input {
     @apply absolute top-full left-0;
@@ -210,7 +216,7 @@
 
   /* dashboard page */
   .dashboar-wrapper .report_wrapper {
-    @apply grid grid-cols-4 gap-7 my-5;
+    @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-7 my-5;
   }
   .dashboar-wrapper .report_wrapper > div {
     @apply p-4 rounded shadow text-white flex gap-4 text-sm;
@@ -220,6 +226,18 @@
   }
   .dashboar-wrapper .report_wrapper > div svg {
     @apply text-5xl;
+  }
+  .dashboard-data {
+    @apply md:grid md:grid-cols-2  lg:grid-cols-5 gap-6 mt-20;
+  }
+  .dashboard-data .item {
+    @apply bg-white rounded shadow-lg mb-5 md:mb-0;
+  }
+  .dashboard-data .item div {
+    @apply flex gap-3 items-center px-4 py-3 hover:bg-gray-100 cursor-pointer;
+  }
+  .dashboard-data .item h4 {
+    @apply text-center font-medium text-xl py-2 rounded-b-md shadow;
   }
 
   /* login form  */
@@ -260,6 +278,11 @@
 
   .forgot-password-form {
     @apply w-[420px] mx-auto mt-10 border rounded hover:shadow-lg p-6 space-y-4;
+  }
+
+  .footer {
+    @apply my-7 text-gray-400 text-sm print:hidden flex flex-col md:flex-row 
+    justify-between gap-1 items-center;
   }
 }
 

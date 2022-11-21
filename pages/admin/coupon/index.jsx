@@ -66,52 +66,54 @@ const DCupon = () => {
             setLimit={setLimit}
           />
 
-          <table>
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>CODE</th>
-                <th>TYPE</th>
-                <th>AMOUNT</th>
-              </tr>
-            </thead>
-            <tbody>
-              {coupon && coupon.length ? (
-                coupon.map((item, i) => (
-                  <React.Fragment key={i}>
-                    <tr>
-                      <td
-                        className={`sn-item ${
-                          i % 2 === 0 ? "bg-[#f1f1f1]" : "bg-[#f9f9f9]"
-                        }`}
-                        onClick={() => handleAction(i)}
-                      >
-                        {showAction !== i ? (
-                          <HiPlusCircle />
-                        ) : (
-                          <HiMinusCircle />
-                        )}
-                        <span>{item.id}</span>
-                      </td>
-                      <td>{item.code}</td>
-                      <td>{item.type}</td>
-                      <td>{item.amount}</td>
-                    </tr>
-                    {showAction === i && (
-                      <DocumentHandler
-                        colSpan={5}
-                        editpage={`/admin/coupon/editcoupon?id=${item.id}`}
-                        loading={loading}
-                        deleteHandler={() => deleteCoupon(item.id)}
-                      />
-                    )}
-                  </React.Fragment>
-                ))
-              ) : (
-                <NoDataFount colSpan={5} />
-              )}
-            </tbody>
-          </table>
+          <div className="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>CODE</th>
+                  <th>TYPE</th>
+                  <th>AMOUNT</th>
+                </tr>
+              </thead>
+              <tbody>
+                {coupon && coupon.length ? (
+                  coupon.map((item, i) => (
+                    <React.Fragment key={i}>
+                      <tr>
+                        <td
+                          className={`sn-item ${
+                            i % 2 === 0 ? "bg-[#f1f1f1]" : "bg-[#f9f9f9]"
+                          }`}
+                          onClick={() => handleAction(i)}
+                        >
+                          {showAction !== i ? (
+                            <HiPlusCircle />
+                          ) : (
+                            <HiMinusCircle />
+                          )}
+                          <span>{item.id}</span>
+                        </td>
+                        <td>{item.code}</td>
+                        <td>{item.type}</td>
+                        <td>{item.amount}</td>
+                      </tr>
+                      {showAction === i && (
+                        <DocumentHandler
+                          colSpan={5}
+                          editpage={`/admin/coupon/editcoupon?id=${item.id}`}
+                          loading={loading}
+                          deleteHandler={() => deleteCoupon(item.id)}
+                        />
+                      )}
+                    </React.Fragment>
+                  ))
+                ) : (
+                  <NoDataFount colSpan={5} />
+                )}
+              </tbody>
+            </table>
+          </div>
           <MainPagesFooterPart
             count={count}
             limit={limit}

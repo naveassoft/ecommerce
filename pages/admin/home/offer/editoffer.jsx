@@ -89,7 +89,7 @@ const EditOffer = () => {
                 placeholder="Product link"
               />
             </div>
-            <div className="flex gap-10 items-center">
+            <div className="edit-input-container">
               <div>
                 <label style={{ marginLeft: 0, marginBottom: 0 }}>Image </label>
                 <input {...register("image")} type="file" />

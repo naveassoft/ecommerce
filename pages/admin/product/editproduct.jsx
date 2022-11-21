@@ -305,7 +305,7 @@ const EditProduct = () => {
             </div>
 
             {/* main image */}
-            <div className="flex gap-5 items-center">
+            <div className="edit-input-container">
               <div>
                 <label style={{ marginLeft: 0, marginBottom: 0 }}>
                   Main Image
@@ -324,34 +324,36 @@ const EditProduct = () => {
             </div>
 
             {/* features image */}
-            <div className="flex gap-5 items-center">
+            <div className="edit-input-container">
               <div>
                 <label style={{ marginLeft: 0, marginBottom: 0 }}>
                   Features Images
                 </label>
                 <input {...register("features_img")} multiple type="file" />
               </div>
-              {product &&
-                product.features_img &&
-                JSON.parse(product.features_img).map((img, i) => (
-                  <div
-                    onClick={() =>
-                      setDeleteImg((prev) => {
-                        if (!prev.includes(img)) return [...prev, img];
-                        return [...prev.filter((item) => item !== img)];
-                      })
-                    }
-                    key={i}
-                    className={`delete-btn-container-onhover ${
-                      deleteImg.includes(img) ? "grayscale" : ""
-                    }`}
-                  >
-                    <img className="h-16 " src={`/assets/${img}`} alt="" />
-                    <div className="delete-btn-onhover">
-                      <FaTrash />
+              <div className="flex flex-wrap gap-2">
+                {product &&
+                  product.features_img &&
+                  JSON.parse(product.features_img).map((img, i) => (
+                    <div
+                      onClick={() =>
+                        setDeleteImg((prev) => {
+                          if (!prev.includes(img)) return [...prev, img];
+                          return [...prev.filter((item) => item !== img)];
+                        })
+                      }
+                      key={i}
+                      className={`delete-btn-container-onhover ${
+                        deleteImg.includes(img) ? "grayscale" : ""
+                      }`}
+                    >
+                      <img className="h-16 " src={`/assets/${img}`} alt="" />
+                      <div className="delete-btn-onhover">
+                        <FaTrash />
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  ))}
+              </div>
             </div>
 
             {/* action buttons */}

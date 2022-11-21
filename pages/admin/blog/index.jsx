@@ -74,56 +74,60 @@ const Blog = () => {
         <div className="container">
           <MainPagesTopPart addLink="/admin/blog/addblog" setLimit={setLimit} />
 
-          <table>
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>TITLE</th>
-                <th>BODY</th>
-              </tr>
-            </thead>
-            <tbody>
-              {blog && blog.length ? (
-                blog.map((item, i) => (
-                  <React.Fragment key={i}>
-                    <tr>
-                      <td
-                        onClick={() => handleAction(i)}
-                        className={`flex items-center gap-1 w-20 ${
-                          i % 2 === 0 ? "bg-[#f1f1f1]" : "bg-[#f9f9f9]"
-                        }`}
-                      >
-                        {showAction !== i ? (
-                          <HiPlusCircle />
-                        ) : (
-                          <HiMinusCircle />
-                        )}
-                        <span>{item.id}</span>
-                      </td>
-                      <td>
-                        {item.title.slice(0, 50)}{" "}
-                        {item.title.length > 50 && "..."}
-                      </td>
-                      <td>
-                        <Interweave content={item.body.slice(0, 40)} />
-                        {item.body.length > 50 && "..."}
-                      </td>
-                    </tr>
-                    {showAction === i && (
-                      <DocumentHandler
-                        colSpan={2}
-                        deleteHandler={() => deleteFaq(item.id)}
-                        editpage={`/admin/blog/editblog?id=${item.id}`}
-                        loading={loading}
-                      />
-                    )}
-                  </React.Fragment>
-                ))
-              ) : (
-                <NoDataFount colSpan={2} />
-              )}
-            </tbody>
-          </table>
+          <div className="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>TITLE</th>
+                  <th>BODY</th>
+                </tr>
+              </thead>
+              <tbody>
+                {blog && blog.length ? (
+                  blog.map((item, i) => (
+                    <React.Fragment key={i}>
+                      <tr>
+                        <td
+                          onClick={() => handleAction(i)}
+                          className={`${
+                            i % 2 === 0 ? "bg-[#f1f1f1]" : "bg-[#f9f9f9]"
+                          }`}
+                        >
+                          <div className="flex items-center gap-1 w-20">
+                            {showAction !== i ? (
+                              <HiPlusCircle />
+                            ) : (
+                              <HiMinusCircle />
+                            )}
+                            <span>{item.id}</span>
+                          </div>
+                        </td>
+                        <td>
+                          {item.title.slice(0, 50)}{" "}
+                          {item.title.length > 50 && "..."}
+                        </td>
+                        <td>
+                          <Interweave content={item.body.slice(0, 40)} />
+                          {item.body.length > 50 && "..."}
+                        </td>
+                      </tr>
+                      {showAction === i && (
+                        <DocumentHandler
+                          colSpan={2}
+                          deleteHandler={() => deleteFaq(item.id)}
+                          editpage={`/admin/blog/editblog?id=${item.id}`}
+                          loading={loading}
+                        />
+                      )}
+                    </React.Fragment>
+                  ))
+                ) : (
+                  <NoDataFount colSpan={2} />
+                )}
+              </tbody>
+            </table>
+          </div>
           <MainPagesFooterPart
             count={count}
             limit={limit}

@@ -69,58 +69,62 @@ const DOffer = () => {
             setLimit={setLimit}
           />
 
-          <table className="w-3/4 mx-auto">
-            <thead className="offer-header">
-              <tr>
-                <th>ID</th>
-                <th className="col-span-2">Title</th>
-                <th>PIORITY</th>
-                <th>IMAGE</th>
-              </tr>
-            </thead>
-            <tbody>
-              {offer && offer.length ? (
-                offer.map((item, i) => (
-                  <React.Fragment key={i}>
-                    <tr>
-                      <td
-                        onClick={() => handleAction(i)}
-                        className={`flex items-center gap-1 py-7 px-5 ${
-                          i % 2 === 0 ? "bg-[#f1f1f1]" : "bg-[#f9f9f9]"
-                        }`}
-                      >
-                        {showAction !== i ? (
-                          <HiPlusCircle />
-                        ) : (
-                          <HiMinusCircle />
-                        )}
-                        <span>{item.id}</span>
-                      </td>
-                      <td className="col-span-2">{item.title}</td>
-                      <td>{item.priority}</td>
-                      <td>
-                        <img
-                          className="h-5"
-                          src={`/assets/${item.image}`}
-                          alt=""
+          <div className="table-container">
+            <table className="w-3/4 mx-auto">
+              <thead className="offer-header">
+                <tr>
+                  <th>ID</th>
+                  <th className="col-span-2">Title</th>
+                  <th>PIORITY</th>
+                  <th>IMAGE</th>
+                </tr>
+              </thead>
+              <tbody>
+                {offer && offer.length ? (
+                  offer.map((item, i) => (
+                    <React.Fragment key={i}>
+                      <tr>
+                        <td
+                          onClick={() => handleAction(i)}
+                          className={`${
+                            i % 2 === 0 ? "bg-[#f1f1f1]" : "bg-[#f9f9f9]"
+                          }`}
+                        >
+                          <div className="flex items-center gap-1">
+                            {showAction !== i ? (
+                              <HiPlusCircle />
+                            ) : (
+                              <HiMinusCircle />
+                            )}
+                            <span>{item.id}</span>
+                          </div>
+                        </td>
+                        <td className="col-span-2">{item.title}</td>
+                        <td>{item.priority}</td>
+                        <td>
+                          <img
+                            className="h-5"
+                            src={`/assets/${item.image}`}
+                            alt=""
+                          />
+                        </td>
+                      </tr>
+                      {showAction === i && (
+                        <DocumentHandler
+                          colSpan={4}
+                          editpage={`/admin/home/offer/editoffer?id=${item.id}`}
+                          deleteHandler={() => deleteOffer(item.id, item.image)}
+                          loading={loading}
                         />
-                      </td>
-                    </tr>
-                    {showAction === i && (
-                      <DocumentHandler
-                        colSpan={4}
-                        editpage={`/admin/home/offer/editoffer?id=${item.id}`}
-                        deleteHandler={() => deleteOffer(item.id, item.image)}
-                        loading={loading}
-                      />
-                    )}
-                  </React.Fragment>
-                ))
-              ) : (
-                <NoDataFount colSpan={4} />
-              )}
-            </tbody>
-          </table>
+                      )}
+                    </React.Fragment>
+                  ))
+                ) : (
+                  <NoDataFount colSpan={4} />
+                )}
+              </tbody>
+            </table>
+          </div>
           <MainPagesFooterPart
             count={count}
             limit={limit}

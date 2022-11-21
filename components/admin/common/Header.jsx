@@ -41,7 +41,7 @@ const Header = ({ isOpen }) => {
       }}
     >
       <div className="header-wrapper">
-        <div className="relative">
+        <div className="relative hidden md:block">
           <input type="text" placeholder="Search" />
           <div className="search-bar">
             <FaSearch />

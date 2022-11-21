@@ -243,27 +243,14 @@ export async function updateOrder(req, res) {
               if (arr.length - 1 === i) {
                 //update user;
                 if (status === "delivered") {
-                  const query = `UPDATE user SET order_placed = order_placed + ${1} WHERE id= ${
-                    req.body.customer_id
-                  }`;
-                  mySql.query(query, (err) => {
-                    if (err)
-                      return errorHandler(res, { message: "Unable to update" });
-                    res.send({ message: "Order Updated Successfully" });
-                  });
+                  updateUser(req, res, req.body.products);
                 } else res.send({ message: "Order Updated Successfully" });
               }
             });
           });
         } else if (status === "delivered") {
           //update user;
-          const query = `UPDATE user SET order_placed = order_placed + ${1} WHERE id= ${
-            req.body.customer_id
-          }`;
-          mySql.query(query, (err) => {
-            if (err) return errorHandler(res, { message: "Unable to update" });
-            res.send({ message: "Order Updated Successfully" });
-          });
+          updateUser(req, res, req.body.products);
         } else if (status === "canceled") {
           JSON.parse(req.body.products).forEach((product, i, arr) => {
             const query = `UPDATE product SET stock = stock + ${product.quantity} WHERE id= ${product.product_id}`;
@@ -286,5 +273,35 @@ export function deleteOrder(req, res) {
   mySql.query(sql, (err) => {
     if (err) return errorHandler(res, { message: err.sqlMessage });
     res.send({ message: "Deleted successfully" });
+  });
+}
+
+function updateUser(req, res, product) {
+  const query = `UPDATE user SET order_placed = order_placed + ${1} WHERE id= ${
+    req.body.customer_id
+  }`;
+  mySql.query(query, (err) => {
+    if (err) return errorHandler(res, { message: "Unable to update user" });
+    //update vendor;
+    const query = `UPDATE vandor SET delivered_order = delivered_order + ${1} WHERE id= ${
+      req.body.vendor_id
+    }`;
+    mySql.query(query, (err) => {
+      if (err) return errorHandler(res, { message: "Unable to update vendor" });
+      //update product;
+      JSON.parse(product).forEach((pro, i, arr) => {
+        const query = `UPDATE product SET delivered_order = delivered_order + ${1} WHERE id= ${
+          pro.product_id
+        }`;
+        mySql.query(query, (err) => {
+          if (err) {
+            return errorHandler(res, { message: "Unable to update product" });
+          }
+        });
+        if (arr.length - 1 === i) {
+          res.send({ message: "Order Updated Successfully" });
+        }
+      });
+    });
   });
 }
