@@ -14,12 +14,12 @@ const TextEditor = dynamic(
 );
 
 const AddProduct = () => {
-  const [subCategory, setSubCategory] = useState(null);
   const { handleSubmit, register, reset } = useForm();
+  const [subCategory, setSubCategory] = useState(null);
   const [showProsub, setShowProSub] = useState(null);
   const [category, setCategory] = useState(null);
-  const [loading, setLoading] = useState(false);
   const [showSub, setShowSub] = useState(null);
+  const [loading, setLoading] = useState(false);
   const [prosub, setProSub] = useState(null);
   const description = useRef(null);
   const store = useStore();

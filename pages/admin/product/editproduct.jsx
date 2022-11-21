@@ -60,7 +60,7 @@ const EditProduct = () => {
     }
     if (product && prosub) {
       const sub = prosub.filter(
-        (item) => item.sub_category_id === product.prosub_id
+        (item) => item.sub_category_id === product.pro_sub_id
       );
       if (sub && sub.length) setShowProSub(sub);
     }
@@ -277,7 +277,7 @@ const EditProduct = () => {
                 {showProsub &&
                   showProsub.map((item) => (
                     <option
-                      selected={product?.prosub_id === item.id}
+                      selected={product?.pro_sub_id === item.id}
                       key={item.id}
                       value={item.id}
                     >

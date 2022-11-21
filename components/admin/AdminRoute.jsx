@@ -7,7 +7,7 @@ const AdminRoute = ({ children }) => {
   const router = useRouter();
   const store = useStore();
   const vendorRoute =
-    /\/admin\/product|^\/admin\/product\/editproduct|\/admin\/product\/addproduct|\/admin\/coupon|\/admin\/coupon\/addcoupon|^\/admin\/coupon\/editcoupon/;
+    /\/admin\/product|^\/admin\/product\/editproduct|\/admin\/product\/addproduct|\/admin\/coupon|\/admin\/coupon\/addcoupon|^\/admin\/coupon\/editcoupon|\/admin\/blog|\/admin\/blog\/addblog|^\/adming\/blog\/editbolg/;
 
   useEffect(() => {
     if (!store.loading && !store.user) {

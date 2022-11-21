@@ -1,25 +1,25 @@
 import {
-  deleteFaq,
-  getFaq,
-  postFaq,
-  updateFaq,
-} from "../../services/admin/server/faq";
+  deleteBlog,
+  getBlog,
+  postBlog,
+  updateBlog,
+} from "../../services/admin/server/blog";
 
 export default async function handler(req, res) {
   switch (req.method) {
     case "GET":
-      getFaq(req, res);
+      getBlog(req, res);
       break;
     case "POST":
-      postFaq(req, res);
+      postBlog(req, res);
       break;
 
     case "PUT":
-      updateFaq(req, res);
+      updateBlog(req, res);
       break;
 
     case "DELETE":
-      deleteFaq(req, res);
+      deleteBlog(req, res);
       break;
 
     default:

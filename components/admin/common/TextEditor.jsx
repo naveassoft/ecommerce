@@ -1,22 +1,23 @@
 import React, { useEffect, useState } from "react";
 import JoditEditor from "jodit-react";
-const confiq = {
-  buttons: [
-    "bold",
-    "Italic",
-    "underline",
-    "link",
-    "unlink",
-    "source",
-    "ul",
-    "ol",
-    "fontsize",
-    "hr",
-  ],
-};
 
-const TextEditor = ({ editorRef, value }) => {
+const TextEditor = ({ editorRef, value, page }) => {
   const [content, setContent] = useState("");
+  const confiq = {
+    buttons: [
+      "bold",
+      "Italic",
+      "underline",
+      "link",
+      "unlink",
+      "source",
+      "ul",
+      "ol",
+      "fontsize",
+      "hr",
+      `${page && page === "blog" ? "image" : ""}`,
+    ],
+  };
 
   useEffect(() => {
     if (value) setContent(value);

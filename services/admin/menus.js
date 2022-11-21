@@ -6,7 +6,7 @@ import {
   AiTwotoneCustomerService,
 } from "react-icons/ai";
 import { RiProductHuntFill } from "react-icons/ri";
-import { FaHome, FaInfoCircle, FaUsers } from "react-icons/fa";
+import { FaBlogger, FaHome, FaInfoCircle, FaUsers } from "react-icons/fa";
 
 export const menus = [
   {
@@ -113,7 +113,7 @@ export const menus = [
     ],
   },
   {
-    path: "/user",
+    path: "/#",
     name: "User Role",
     icon: <AiOutlineUser />,
     highlight: ["/admin/user"],
@@ -125,7 +125,7 @@ export const menus = [
     ],
   },
   {
-    path: "/vandor",
+    path: "/#",
     name: "Vendor",
     icon: <FaUsers />,
     highlight: ["/admin/vandor"],
@@ -133,6 +133,22 @@ export const menus = [
       {
         path: "/admin/vandor",
         name: "All Vendor",
+      },
+    ],
+  },
+  {
+    path: "/#",
+    name: "Blog",
+    icon: <FaBlogger />,
+    highlight: ["/admin/blog"],
+    subRoutes: [
+      {
+        path: "/admin/blog",
+        name: "All Blog",
+      },
+      {
+        path: "/admin/blog/addblog",
+        name: "Add Blog",
       },
     ],
   },
@@ -222,6 +238,22 @@ export const vendorMenu = [
       {
         path: "/admin/coupon",
         name: "Coupon Code",
+      },
+    ],
+  },
+  {
+    path: "/#",
+    name: "Blog",
+    icon: <FaBlogger />,
+    highlight: ["/admin/blog"],
+    subRoutes: [
+      {
+        path: "/admin/blog",
+        name: "All Blog",
+      },
+      {
+        path: "/admin/blog/addblog",
+        name: "Add Blog",
       },
     ],
   },
