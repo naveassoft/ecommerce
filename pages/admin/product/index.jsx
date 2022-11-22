@@ -2,7 +2,8 @@ import DashboardLayout from "../../../components/admin/common/DashboardLayout";
 import { HiMinusCircle, HiPlusCircle } from "react-icons/hi";
 import useStore from "../../../components/context/useStore";
 import { RiProductHuntFill } from "react-icons/ri";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
+import QRCode from "react-qr-code";
 import {
   DocumentHandler,
   MainPagesFooterPart,
@@ -10,16 +11,19 @@ import {
   NoDataFount,
   PageInfo,
 } from "../../../components/admin/common/common";
+import { downloadSVGAsPNG } from "../../../services/client/common";
 
 const Products = () => {
   const [showAction, setShowAction] = useState(-1);
+  const [products, setProducts] = useState(null);
+  const [seeQrcode, setSeeQrcode] = useState(null);
   const [loading, setLoading] = useState(false);
   const [update, setUpdate] = useState(false);
-  const [products, setProducts] = useState(null);
   const [limit, setLimit] = useState(5);
   const [count, setCount] = useState(0);
   const [page, setPage] = useState(0);
   const store = useStore();
+  const svgRef = useRef(null);
 
   function handleAction(i) {
     setShowAction((prev) => {
@@ -69,7 +73,10 @@ const Products = () => {
 
   return (
     <DashboardLayout>
-      <div className="dashboard-home-container">
+      <div
+        onClick={() => setSeeQrcode(null)}
+        className="dashboard-home-container"
+      >
         <PageInfo title="Product" type="View" icon={<RiProductHuntFill />} />
 
         <div className="container">
@@ -128,7 +135,7 @@ const Products = () => {
                       </tr>
                       {showAction === i && (
                         <DocumentHandler
-                          colSpan={5}
+                          colSpan={6}
                           editpage={`/admin/product/editproduct?id=${item.id}`}
                           deleteHandler={() =>
                             deleteProduct(
@@ -138,6 +145,8 @@ const Products = () => {
                             )
                           }
                           loading={loading}
+                          setSeeQrcode={setSeeQrcode}
+                          qrCode={item.qr_code}
                         />
                       )}
                     </React.Fragment>
@@ -156,6 +165,22 @@ const Products = () => {
             showingData={products?.length || 0}
           />
         </div>
+
+        {seeQrcode ? (
+          <div
+            onClick={(e) => {
+              e.stopPropagation();
+              downloadSVGAsPNG(
+                e,
+                svgRef.current,
+                seeQrcode.split(",")[0].split(":")[1].trim()
+              );
+            }}
+            className="qr-code-container"
+          >
+            <QRCode ref={svgRef} value={seeQrcode || ""} />
+          </div>
+        ) : null}
       </div>
     </DashboardLayout>
   );

@@ -102,6 +102,16 @@ const EditProduct = () => {
     if (!product) return;
     setLoading(true);
     data.user_id = store.user.id;
+    data.qr_code = `
+    name: ${data.name || product.name},
+    ${
+      store.user.user_role === "vendor"
+        ? `vendor: ${store.user.shop_name},`
+        : ""
+    }
+    sku: ${data.sku || product.sku},
+    price: ${data.price || product.price}`;
+
     data.user_type = store.user.user_role;
     //find the category, sub category and pro sub name base on their ids;
     if (data.category_id) {

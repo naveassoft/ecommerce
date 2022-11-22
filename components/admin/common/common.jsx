@@ -1,5 +1,6 @@
 import { AnimatePresence, motion } from "framer-motion";
 import Link from "next/link";
+import { AiOutlineQrcode } from "react-icons/ai";
 import { FaEdit, FaEye, FaHome, FaTrash } from "react-icons/fa";
 import { HiPlusCircle } from "react-icons/hi";
 import { menuAnimation } from "../components/SidebarMenu";
@@ -106,6 +107,8 @@ export function DocumentHandler({
   loading,
   deleteHandler,
   title,
+  setSeeQrcode,
+  qrCode,
 }) {
   return (
     <tr>
@@ -129,6 +132,17 @@ export function DocumentHandler({
                   )}
                 </Link>
               )}
+              {setSeeQrcode && qrCode ? (
+                <button
+                  className="mx-1"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setSeeQrcode(qrCode);
+                  }}
+                >
+                  <AiOutlineQrcode className="text-orange-700" />
+                </button>
+              ) : null}
               {deleteHandler && (
                 <button disabled={loading} onClick={deleteHandler}>
                   <FaTrash className="text-red-500" />

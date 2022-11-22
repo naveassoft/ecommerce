@@ -81,6 +81,7 @@ const ProductSchema = Joi.object({
   colour: Joi.string(),
   size: Joi.string(),
   unit: Joi.string().valid("piece", "kg"),
+  qr_code: Joi.string().required(),
 });
 
 export async function postProduct(req, res) {

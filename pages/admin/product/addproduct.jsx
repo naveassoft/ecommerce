@@ -73,6 +73,16 @@ const AddProduct = () => {
     }
     setLoading(true);
     data.user_id = store.user.id;
+    data.user_type = store.user.user_role;
+    data.qr_code = `
+    name: ${data.name},
+    ${
+      store.user.user_role === "vendor"
+        ? `vendor: ${store.user.shop_name},`
+        : ""
+    } 
+    sku: ${data.sku}, price: ${data.price}`;
+
     //find the category, sub category and pro sub name base on their ids;
     data.category_name = category?.find(
       (item) => item.id == data.category_id
@@ -91,7 +101,6 @@ const AddProduct = () => {
     data.description = description.current?.value;
     data.main_image = data.main_image[0];
     data.created_by = store.user.id;
-    data.user_type = store.user.user_role;
     const formData = new FormData();
     Object.entries(data).forEach(([key, value]) => {
       if (value) {
