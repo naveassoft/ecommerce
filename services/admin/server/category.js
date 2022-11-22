@@ -45,12 +45,13 @@ export async function postCategory(req, res) {
     if (error || !req.files.image) {
       throw { message: "Error occured when image updlading" };
     }
+    req.body.image = req.files.image[0].filename;
     if (!req.body.user_id) {
+      deleteImage(req.body.image);
       return errorHandler(res, { message: "Forbiden", status: 403 });
     }
     function addC() {
       req.body.priority = parseInt(req.body.priority);
-      req.body.image = req.files.image[0].filename;
       delete req.body.user_id;
 
       //api validateion;
@@ -61,20 +62,31 @@ export async function postCategory(req, res) {
         return;
       }
 
-      const sql = "INSERT INTO category SET ?";
-      mySql.query(sql, req.body, (err, result) => {
-        if (err) throw { message: err.sqlMessage };
-        else {
-          if (result.insertId > 0) {
-            res.send({ message: "Category Added Successfully" });
-          } else {
-            res.send({ message: "Unable to Added, please try again" });
-          }
+      const query = `SELECT id FROM category WHERE name = '${req.body.name}'`;
+      mySql.query(query, (err, result) => {
+        if (err || result.length) {
+          deleteImage(req.body.image);
+          errorHandler(res, { message: err?.sqlMessage || "Already added" });
+          return;
         }
+        const sql = "INSERT INTO category SET ?";
+        mySql.query(sql, req.body, (err, result) => {
+          if (err) {
+            deleteImage(req.body.image);
+            return errorHandler(res, { message: err.sqlMessage });
+          } else {
+            if (result.insertId > 0) {
+              res.send({ message: "Category Added Successfully" });
+            } else {
+              res.send({ message: "Unable to Added, please try again" });
+            }
+          }
+        });
       });
     }
-    varifyOwner(res, req.body.user_id, addC);
+    varifyOwner(res, req.body.user_id, addC, req.body.image);
   } catch (error) {
+    deleteImage(req.body.image);
     errorHandler(res, error);
   }
 }

@@ -8,7 +8,6 @@ import { FaTrash } from "react-icons/fa";
 import { useRouter } from "next/router";
 import dynamic from "next/dynamic";
 import Link from "next/link";
-import { date } from "joi";
 const TextEditor = dynamic(
   () => import("../../../components/admin/common/TextEditor"),
   {

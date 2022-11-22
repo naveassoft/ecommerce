@@ -106,7 +106,7 @@ export async function updateCoupon(req, res) {
 
       const sql = `UPDATE coupon SET ${data} WHERE id=${req.query.id}`;
       mySql.query(sql, (err, result) => {
-        if (err) throw { message: err.sqlMessage };
+        if (err) return errorHandler(res, { message: err.sqlMessage });
         else {
           if (result.changedRows > 0) {
             res.send({ message: "Coupon Updated Successfully" });

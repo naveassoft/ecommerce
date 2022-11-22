@@ -47,13 +47,14 @@ export async function postBrand(req, res) {
         message: "Error occured when image updlading",
       });
     }
+    req.body.image = req.files.image[0].filename;
     if (!req.body.user_id) {
+      deleteImage(req.body.image);
       return errorHandler(res, { message: "Forbiden", status: 403 });
     }
 
     function post() {
       delete req.body.user_id;
-      req.body.image = req.files.image[0].filename;
       //api validateion;
       const varify = brandSchema.validate(req.body);
       if (varify.error) {
@@ -64,8 +65,10 @@ export async function postBrand(req, res) {
 
       const sql = "INSERT INTO brand SET ?";
       mySql.query(sql, req.body, (err, result) => {
-        if (err) return errorHandler(res, { message: err.sqlMessage });
-        else {
+        if (err) {
+          deleteImage(req.body.image);
+          return errorHandler(res, { message: err.sqlMessage });
+        } else {
           if (result.insertId > 0) {
             res.send({ message: "Brand Added Successfully" });
           } else {
@@ -74,8 +77,9 @@ export async function postBrand(req, res) {
         }
       });
     }
-    varifyOwner(res, req.body.user_id, post);
+    varifyOwner(res, req.body.user_id, post, req.body.image);
   } catch (error) {
+    deleteImage(req.body.image);
     errorHandler(res, error);
   }
 }

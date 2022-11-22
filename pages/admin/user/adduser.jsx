@@ -11,6 +11,7 @@ const AddUser = () => {
   const [showPassword, setShowPassword] = useState(false),
     { handleSubmit, register, reset } = useForm(),
     [loading, setLoading] = useState(false),
+    [imgUrl, setImgUrl] = useState(null),
     store = useStore(null);
 
   async function onsubmit(data) {
@@ -38,11 +39,18 @@ const AddUser = () => {
     );
     if (!error) {
       reset();
+      setImgUrl(null);
       store?.setAlert({ msg: message, type: "success" });
     } else {
       store?.setAlert({ msg: message, type: "error" });
     }
     setLoading(false);
+  }
+
+  function imgHandler(file) {
+    if (file) {
+      setImgUrl(URL.createObjectURL(file));
+    } else setImgUrl(null);
   }
 
   return (
@@ -109,11 +117,19 @@ const AddUser = () => {
                 <option value="uploader">Product uploader</option>
               </select>
             </div>
-            <div>
-              <label style={{ marginLeft: 0, marginBottom: 0 }}>
-                User profile
-              </label>
-              <input {...register("profile")} type="file" />
+            <div className="edit-input-container">
+              <div>
+                <label style={{ marginLeft: 0, marginBottom: 0 }}>
+                  User profile
+                </label>
+                <input
+                  {...register("profile")}
+                  type="file"
+                  onChange={(e) => imgHandler(e.target.files[0])}
+                  accept="image/png, image/jpeg"
+                />
+              </div>
+              {imgUrl && <img className="h-8" src={imgUrl} alt="" />}
             </div>
 
             <div className="flex justify-between">

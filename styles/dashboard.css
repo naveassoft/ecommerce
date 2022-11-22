@@ -167,14 +167,14 @@
 
   /* order page  */
   .order-deatils-container {
-    @apply py-14 px-20 bg-white rounded shadow mt-10 print:px-0 
+    @apply py-14 md:px-20 bg-white rounded shadow mt-10 print:px-0 
     print:mt-0 print:py-0 print:shadow-none;
   }
   .order-deatils-container .wrapper {
     @apply border px-1 text-gray-500;
   }
   .order-deatils-container .icons-wrapper {
-    @apply flex gap-10 px-10 py-5 text-[navy];
+    @apply flex gap-10 px-10 py-5 text-[navy] overflow-auto;
   }
   .order-deatils-container .icons-wrapper div {
     @apply flex flex-col items-center;
@@ -218,13 +218,13 @@
   .dashboar-wrapper .report_wrapper {
     @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-7 my-5;
   }
-  .dashboar-wrapper .report_wrapper > div {
+  .dashboar-wrapper .report_wrapper > a > div {
     @apply p-4 rounded shadow text-white flex gap-4 text-sm;
   }
-  .dashboar-wrapper .report_wrapper > div h3 {
+  .dashboar-wrapper .report_wrapper a > div h3 {
     @apply font-semibold;
   }
-  .dashboar-wrapper .report_wrapper > div svg {
+  .dashboar-wrapper .report_wrapper a > div svg {
     @apply text-5xl;
   }
   .dashboard-data {
@@ -237,7 +237,8 @@
     @apply flex gap-3 items-center px-4 py-3 hover:bg-gray-100 cursor-pointer;
   }
   .dashboard-data .item h4 {
-    @apply text-center font-medium text-xl py-2 rounded-b-md shadow;
+    @apply text-center font-medium text-xl py-2 rounded-b-md shadow 
+    bg-blue-50 text-gray-800;
   }
 
   /* login form  */

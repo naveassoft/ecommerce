@@ -91,40 +91,44 @@ export async function postProduct(req, res) {
     ];
     const { error } = await bodyParser(req, res, "assets", img);
     if (error || !req.files.main_image || !req.files.features_img) {
-      return resError(req, res, "Error occured when image updlading");
+      return resError(req, res, {
+        message: "Error occured when image updlading",
+      });
     }
+
+    //images;
+    req.body.main_image = req.files.main_image[0].filename;
+    const features_img = [];
+    req.files.features_img.forEach((img) => {
+      features_img.push(img.filename);
+    });
+
     if (!req.body.user_id && !req.body.user_type) {
-      return errorHandler(res, { message: "Forbiden", status: 403 });
+      resError(req, res, { message: "Forbiden", status: 403 });
     }
     varifyUser(res, req.body.user_id, req.body.user_type, () => {
       delete req.body.user_id;
       req.body.created_at = new Date();
-      req.body.main_image = req.files.main_image[0].filename;
-      const features_img = [];
-      req.files.features_img.forEach((img) => {
-        features_img.push(img.filename);
-      });
       req.body.features_img = JSON.stringify(features_img);
 
       //api validateion;
       const varify = ProductSchema.validate(req.body);
-      if (varify.error) return resError(req, res, varify.error.message);
+      if (varify.error)
+        return resError(req, res, { message: varify.error.message });
 
       //check sku is exist;
       const query = `SELECT * FROM product WHERE sku = '${req.body.sku}'`;
       mySql.query(query, (err, result) => {
-        if (err) return resError(req, res, err.sqlMessage);
+        if (err) return resError(req, res, { message: err.sqlMessage });
         else if (result.length) {
-          return resError(
-            req,
-            res,
-            "Already this SKU added, try with different SKU"
-          );
+          return resError(req, res, {
+            message: "Already this SKU added, try with different SKU",
+          });
         } else {
           //procced to uploading product;
           const sql = "INSERT INTO product SET ?";
           mySql.query(sql, req.body, (err, result) => {
-            if (err) return resError(req, res, err.sqlMessage);
+            if (err) return resError(req, res, { message: err.sqlMessage });
             else {
               if (result.insertId > 0) {
                 res.send({ message: "Product Added Successfully" });
@@ -137,7 +141,7 @@ export async function postProduct(req, res) {
       });
     });
   } catch (error) {
-    resError(req, res, error.message);
+    resError(req, res, { message: error.message });
   }
 }
 
@@ -145,7 +149,7 @@ export async function deleteProduct(req, res) {
   try {
     const { error } = await bodyParser(req, res, "", []);
     if (error) {
-      return resError(req, res, "Error occured when parsing body");
+      return resError(req, res, { message: "Error occured when parsing body" });
     }
     if (!req.body.user_id && !req.body.user_type) {
       return errorHandler(res, { message: "Forbiden", status: 403 });
@@ -250,10 +254,10 @@ export async function updateProduct(req, res) {
   }
 }
 
-function resError(req, res, message) {
+function resError(req, res, error) {
   deleteImage(req.files.main_image[0].filename);
   req.files.features_img.forEach((img) => {
     deleteImage(img.filename);
   });
-  errorHandler(res, { message });
+  errorHandler(res, error);
 }

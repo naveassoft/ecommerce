@@ -20,11 +20,15 @@ export const mailer = nodemailer.createTransport({
   },
 });
 
-export function varifyOwner(res, user_id, callback) {
+export function varifyOwner(res, user_id, callback, img) {
   const sql = `SELECT id, user_role FROM user WHERE id = '${user_id}'`;
   mySql.query(sql, (err, result) => {
-    if (err) return errorHandler(res, { message: err.sqlMessage });
+    if (err) {
+      if (img) deleteImage(img);
+      return errorHandler(res, { message: err.sqlMessage });
+    }
     if (!result.length || result[0].user_role !== "owner") {
+      if (img) deleteImage(img);
       return errorHandler(res, { message: "Forbidden" });
     }
     callback();

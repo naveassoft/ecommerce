@@ -11,6 +11,7 @@ const AddVandor = () => {
   const [showPassword, setShowPassword] = useState(false);
   const { handleSubmit, register, reset } = useForm();
   const [loading, setLoading] = useState(false);
+  const [imgUrl, setImgUrl] = useState(null);
   const store = useStore(null);
 
   async function onsubmit(data) {
@@ -44,11 +45,18 @@ const AddVandor = () => {
     );
     if (!error) {
       reset();
+      setImgUrl(null);
       store?.setAlert({ msg: message, type: "success" });
     } else {
       store?.setAlert({ msg: message, type: "error" });
     }
     setLoading(false);
+  }
+
+  function imgHandler(file) {
+    if (file) {
+      setImgUrl(URL.createObjectURL(file));
+    } else setImgUrl(null);
   }
 
   return (
@@ -143,11 +151,19 @@ const AddVandor = () => {
               />
             </div>
 
-            <div>
-              <label style={{ marginLeft: 0, marginBottom: 0 }}>
-                Shop Logo
-              </label>
-              <input {...register("shop_logo")} type="file" />
+            <div className="edit-input-container">
+              <div>
+                <label style={{ marginLeft: 0, marginBottom: 0 }}>
+                  Shop Logo
+                </label>
+                <input
+                  {...register("shop_logo")}
+                  onChange={(e) => imgHandler(e.target.files[0])}
+                  type="file"
+                  accept="image/png, image/jpeg"
+                />
+              </div>
+              {imgUrl && <img className="h-8" src={imgUrl} alt="" />}
             </div>
 
             <div className="flex justify-between">

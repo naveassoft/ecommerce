@@ -89,7 +89,7 @@ const EditCuppon = () => {
                 <div className="flex items-center gap-4">
                   <input
                     {...register("type")}
-                    defaultChecked={coupon?.type === "fixed"}
+                    checked={coupon?.type === "fixed"}
                     type="radio"
                     name="type"
                     value="fixed"
@@ -103,7 +103,7 @@ const EditCuppon = () => {
                   <input
                     {...register("type")}
                     type="radio"
-                    defaultChecked={coupon?.type === "percent"}
+                    checked={coupon?.type === "percent"}
                     name="type"
                     value="percent"
                     id="percent"

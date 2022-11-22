@@ -43,17 +43,23 @@ export async function postProSub(req, res) {
         errorHandler(res, { message: varify.error.message });
         return;
       }
-
-      const sql = "INSERT INTO pro_sub_category SET ?";
-      mySql.query(sql, req.body, (err, result) => {
+      const query = `SELECT id FROM pro_sub_category WHERE name = '${req.body.name}' AND sub_category_id = '${req.body.sub_category_id}'`;
+      mySql.query(query, (err, result) => {
         if (err) return errorHandler(res, { message: err.sqlMessage });
-        else {
-          if (result.insertId > 0) {
-            res.send({ message: "Pro Sub Category Added Successfully" });
-          } else {
-            res.send({ message: "Unable to Added, please try again" });
-          }
+        if (result.length) {
+          return errorHandler(res, { message: "Already added", status: 409 });
         }
+        const sql = "INSERT INTO pro_sub_category SET ?";
+        mySql.query(sql, req.body, (err, result) => {
+          if (err) return errorHandler(res, { message: err.sqlMessage });
+          else {
+            if (result.insertId > 0) {
+              res.send({ message: "Pro Sub Category Added Successfully" });
+            } else {
+              res.send({ message: "Unable to Added, please try again" });
+            }
+          }
+        });
       });
     }
     varifyOwner(res, req.body.user_id, post);

@@ -47,35 +47,44 @@ export async function postOffer(req, res) {
         message: "Error occured when image updlading",
       });
     }
+    req.body.image = req.files.image[0].filename;
     if (!req.body.user_id) {
+      deleteImage(req.body.image);
       return errorHandler(res, { message: "Forbiden", status: 403 });
     }
 
-    varifyOwner(res, req.body.user_id, () => {
-      delete req.body.user_id;
-      req.body.priority = parseInt(req.body.priority);
-      req.body.image = req.files.image[0].filename;
-      //api validateion;
-      const varify = OfferSchema.validate(req.body);
-      if (varify.error) {
-        deleteImage(req.body.image);
-        errorHandler(res, { message: varify.error.message });
-        return;
-      }
-
-      const sql = "INSERT INTO offer SET ?";
-      mySql.query(sql, req.body, (err, result) => {
-        if (err) return errorHandler(res, { message: err.sqlMessage });
-        else {
-          if (result.insertId > 0) {
-            res.send({ message: "Offer Added Successfully" });
-          } else {
-            res.send({ message: "Unable to Added, please try again" });
-          }
+    varifyOwner(
+      res,
+      req.body.user_id,
+      () => {
+        delete req.body.user_id;
+        req.body.priority = parseInt(req.body.priority);
+        //api validateion;
+        const varify = OfferSchema.validate(req.body);
+        if (varify.error) {
+          deleteImage(req.body.image);
+          errorHandler(res, { message: varify.error.message });
+          return;
         }
-      });
-    });
+
+        const sql = "INSERT INTO offer SET ?";
+        mySql.query(sql, req.body, (err, result) => {
+          if (err) {
+            deleteImage(req.body.image);
+            return errorHandler(res, { message: err.sqlMessage });
+          } else {
+            if (result.insertId > 0) {
+              res.send({ message: "Offer Added Successfully" });
+            } else {
+              res.send({ message: "Unable to Added, please try again" });
+            }
+          }
+        });
+      },
+      req.body.image
+    );
   } catch (error) {
+    deleteImage(req.body.image);
     errorHandler(res, error);
   }
 }
@@ -93,7 +102,7 @@ export async function deleteOffer(req, res) {
     varifyOwner(res, req.body.user_id, () => {
       const sql = `DELETE FROM offer WHERE id=${req.body.id}`;
       mySql.query(sql, (err) => {
-        if (err) throw { message: err.sqlMessage };
+        if (err) return errorHandler(res, { message: err.sqlMessage });
         deleteImage(req.body.image);
         res.send({ message: "Deleted successfully" });
       });

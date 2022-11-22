@@ -14,8 +14,10 @@ const TextEditor = dynamic(
 );
 
 const AddProduct = () => {
+  const [featuresImgUrl, setFeatureUrl] = useState(null);
   const { handleSubmit, register, reset } = useForm();
   const [subCategory, setSubCategory] = useState(null);
+  const [mainImgUrl, setMainImgUrl] = useState(null);
   const [showProsub, setShowProSub] = useState(null);
   const [category, setCategory] = useState(null);
   const [showSub, setShowSub] = useState(null);
@@ -112,6 +114,8 @@ const AddProduct = () => {
     if (!error) {
       store?.setAlert({ msg: message, type: "success" });
       reset();
+      setMainImgUrl(null);
+      setFeatureUrl(null);
     } else {
       store?.setAlert({ msg: message, type: "error" });
     }
@@ -162,6 +166,21 @@ const AddProduct = () => {
       required: true,
     },
   ];
+
+  function hanleMainImg(file) {
+    if (file) {
+      setMainImgUrl(URL.createObjectURL(file));
+    } else setMainImgUrl(null);
+  }
+  function handleFeatureUrl(file) {
+    if (file) {
+      const images = [];
+      Array.from(file).forEach((img) =>
+        images.push({ name: img.name, url: URL.createObjectURL(img) })
+      );
+      setFeatureUrl(images);
+    }
+  }
 
   return (
     <DashboardLayout>
@@ -297,27 +316,44 @@ const AddProduct = () => {
               <label>Description</label>
               <TextEditor editorRef={description} />
             </div>
-            <div>
-              <label style={{ marginLeft: 0, marginBottom: 0 }}>
-                Main Image
-              </label>
-              <input
-                {...register("main_image", { required: true })}
-                required
-                type="file"
-              />
+            <div className="edit-input-container">
+              <div>
+                <label style={{ marginLeft: 0, marginBottom: 0 }}>
+                  Main Image
+                </label>
+                <input
+                  {...register("main_image", { required: true })}
+                  required
+                  onChange={(e) => hanleMainImg(e.target.files[0])}
+                  accept="image/png, image/jpeg"
+                  type="file"
+                />
+              </div>
+              {mainImgUrl && <img className="h-8" src={mainImgUrl} alt="" />}
             </div>
-            <div>
-              <label style={{ marginLeft: 0, marginBottom: 0 }}>
-                Features Images
-              </label>
-              <input
-                {...register("features_img", { required: true })}
-                multiple
-                maxLength={5}
-                required
-                type="file"
-              />
+
+            <div className="edit-input-container">
+              <div>
+                <label style={{ marginLeft: 0, marginBottom: 0 }}>
+                  Features Images
+                </label>
+                <input
+                  {...register("features_img", { required: true })}
+                  multiple
+                  onChange={(e) => handleFeatureUrl(e.target.files)}
+                  maxLength={5}
+                  accept="image/png, image/jpeg"
+                  required
+                  type="file"
+                />
+              </div>
+              {featuresImgUrl && (
+                <div className="flex gap-1">
+                  {featuresImgUrl.map((img, i) => (
+                    <img className="h-8" key={i} src={img.url} alt="" />
+                  ))}
+                </div>
+              )}
             </div>
             <div className="flex justify-between">
               <button

@@ -7,7 +7,7 @@ const IndicatorIcon = ({ status }) => {
       <div>
         <div
           className={
-            /delivered|shipping|deliverd/.test(status) ? "highlight" : "none"
+            /delivered|shipping|processing/.test(status) ? "highlight" : "none"
           }
         >
           <GiCheckMark />

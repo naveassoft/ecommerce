@@ -11,6 +11,7 @@ const AdBanner = () => {
   const [category, setCategory] = useState(null);
   const [subCategory, setSubCategory] = useState(null);
   const [showSub, setShowSub] = useState(null);
+  const [imgUrl, setImgUrl] = useState(null);
   const [loading, setLoading] = useState(false);
   const store = useStore();
 
@@ -62,10 +63,17 @@ const AdBanner = () => {
     if (!error) {
       store?.setAlert({ msg: message, type: "success" });
       reset();
+      setImgUrl(null);
     } else {
       store?.setAlert({ msg: message, type: "error" });
     }
     setLoading(false);
+  }
+
+  function imgHandler(file) {
+    if (file) {
+      setImgUrl(URL.createObjectURL(file));
+    } else setImgUrl(null);
   }
 
   return (
@@ -109,13 +117,18 @@ const AdBanner = () => {
                   ))}
               </select>
             </div>
-            <div>
-              <label style={{ marginLeft: 0, marginBottom: 0 }}>Image </label>
-              <input
-                {...register("image", { required: true })}
-                required
-                type="file"
-              />
+            <div className="edit-input-container">
+              <div>
+                <label style={{ marginLeft: 0, marginBottom: 0 }}>Image </label>
+                <input
+                  {...register("image", { required: true })}
+                  onChange={(e) => imgHandler(e.target.files[0])}
+                  required
+                  accept="image/png, image/jpeg"
+                  type="file"
+                />
+              </div>
+              {imgUrl && <img className="h-8" src={imgUrl} alt="" />}
             </div>
             <div className="flex justify-between">
               <button

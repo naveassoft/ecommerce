@@ -48,13 +48,14 @@ export async function postSubCategory(req, res) {
         message: "Error occured when image updlading",
       });
     }
+    req.body.image = req.files.image[0].filename;
     if (!req.body.user_id) {
+      deleteImage(req.body.image);
       return errorHandler(res, { message: "Forbiden", status: 403 });
     }
 
     function add() {
       delete req.body.user_id;
-      req.body.image = req.files.image[0].filename;
       //api validateion;
       const varify = subCategorySchema.validate(req.body);
       if (varify.error) {
@@ -63,16 +64,28 @@ export async function postSubCategory(req, res) {
         return;
       }
 
-      const sql = "INSERT INTO sub_category SET ?";
-      mySql.query(sql, req.body, (err, result) => {
-        if (err) return errorHandler(res, { message: err.sqlMessage });
-        else {
-          if (result.insertId > 0) {
-            res.send({ message: "Category Added Successfully" });
-          } else {
-            res.send({ message: "Unable to Added, please try again" });
-          }
+      const query = `SELECT id FROM sub_category WHERE name = '${req.body.name}' AND category_id = '${req.body.category_id}'`;
+      mySql.query(query, (err, result) => {
+        if (err || result.length) {
+          deleteImage(req.body.image);
+          errorHandler(res, { message: err?.sqlMessage || "Already added" });
+          return;
         }
+
+        const sql = "INSERT INTO sub_category SET ?";
+        mySql.query(sql, req.body, (err, result) => {
+          if (err) {
+            deleteImage(req.body.image);
+            errorHandler(res, { message: err.sqlMessage });
+            return;
+          } else {
+            if (result.insertId > 0) {
+              res.send({ message: "Sub category Added Successfully" });
+            } else {
+              res.send({ message: "Unable to Added, please try again" });
+            }
+          }
+        });
       });
     }
     varifyOwner(res, req.body.user_id, add);
@@ -93,7 +106,7 @@ export async function deletesubCategory(req, res) {
     function deleteS() {
       const sql = `DELETE FROM sub_category WHERE id=${req.body.id}`;
       mySql.query(sql, (err) => {
-        if (err) throw { message: err.sqlMessage };
+        if (err) return errorHandler(res, { message: err.sqlMessage });
         deleteImage(req.body.image);
         res.send({ message: "Deleted successfully" });
       });

@@ -9,6 +9,7 @@ const AdSubCategory = () => {
   const { handleSubmit, register, reset } = useForm();
   const [category, setCategory] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [imgUrl, setImgUrl] = useState(null);
   const store = useStore();
 
   useEffect(() => {
@@ -40,10 +41,17 @@ const AdSubCategory = () => {
     if (!error) {
       store?.setAlert({ msg: message, type: "success" });
       reset();
+      setImgUrl(null);
     } else {
       store?.setAlert({ msg: message, type: "error" });
     }
     setLoading(false);
+  }
+
+  function imgHandler(file) {
+    if (file) {
+      setImgUrl(URL.createObjectURL(file));
+    } else setImgUrl(null);
   }
 
   return (
@@ -89,13 +97,18 @@ const AdSubCategory = () => {
                 placeholder="Sub Category Description"
               />
             </div>
-            <div>
-              <label style={{ marginLeft: 0, marginBottom: 0 }}>Image </label>
-              <input
-                {...register("image", { required: true })}
-                required
-                type="file"
-              />
+            <div className="edit-input-container">
+              <div>
+                <label style={{ marginLeft: 0, marginBottom: 0 }}>Image </label>
+                <input
+                  {...register("image", { required: true })}
+                  onChange={(e) => imgHandler(e.target.files[0])}
+                  required
+                  accept="image/png, image/jpeg"
+                  type="file"
+                />
+              </div>
+              {imgUrl && <img className="h-8" src={imgUrl} alt="" />}
             </div>
             <div className="flex justify-between">
               <button

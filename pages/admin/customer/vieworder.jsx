@@ -22,7 +22,7 @@ const ViewOrder = () => {
     if (router.query.id) {
       (async function () {
         const { data, error } = await store?.fetchData(
-          `/api/order?id=${router.query.id}`
+          `/api/order?id=${router.query.id}&user=${store.user.id}`
         );
         if (data) {
           const vandor = await store?.fetchData(
@@ -130,7 +130,7 @@ const ViewOrder = () => {
             {/* shipping and billing address info end */}
 
             {/* product info start  */}
-            <div className="px-2">
+            <div className="px-2 table-container border-x-0">
               <table className="w-full">
                 <thead>
                   <tr>

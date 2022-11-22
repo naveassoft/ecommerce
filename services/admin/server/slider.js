@@ -64,7 +64,7 @@ export async function postSlider(req, res) {
 
       const sql = "INSERT INTO slider SET ?";
       mySql.query(sql, req.body, (err, result) => {
-        if (err) throw { message: err.sqlMessage };
+        if (err) return errorHandler(res, { message: err.sqlMessage });
         else {
           if (result.insertId > 0) {
             res.send({ message: "Slider Added Successfully" });
@@ -133,7 +133,7 @@ export async function updateSlider(req, res) {
 
       const sql = `UPDATE slider SET ${data} WHERE id=${req.query.id}`;
       mySql.query(sql, (err, result) => {
-        if (err) throw { message: err.sqlMessage };
+        if (err) return errorHandler(res, { message: err.sqlMessage });
         else {
           if (result.changedRows > 0) {
             if (exist) {
