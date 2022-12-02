@@ -58,6 +58,7 @@ const EditCuppon = () => {
     setLoading(false);
   }
 
+  if (!coupon) return null;
   return (
     <DashboardLayout>
       <section>
@@ -89,7 +90,7 @@ const EditCuppon = () => {
                 <div className="flex items-center gap-4">
                   <input
                     {...register("type")}
-                    checked={coupon?.type === "fixed"}
+                    defaultChecked={coupon?.type === "fixed"}
                     type="radio"
                     name="type"
                     value="fixed"
@@ -103,7 +104,7 @@ const EditCuppon = () => {
                   <input
                     {...register("type")}
                     type="radio"
-                    checked={coupon?.type === "percent"}
+                    defaultChecked={coupon?.type === "percent"}
                     name="type"
                     value="percent"
                     id="percent"

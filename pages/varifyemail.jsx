@@ -14,7 +14,7 @@ const VarifyEmail = () => {
         const res = await fetch(`/api/login?varifyEmail=${router.query.token}`);
         if (res.ok) {
           setSuccess(true);
-          router.push("/");
+          router.push(store?.redirect);
         } else setSuccess(false);
       }
       setLoading(false);

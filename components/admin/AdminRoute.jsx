@@ -13,13 +13,11 @@ const AdminRoute = ({ children }) => {
     if (!store.loading && !store.user) {
       router.push("/login");
       store.setRedirect("/admin");
-    } else if (!store.loading && store.user.user_role === "customer") {
-      router.push("/");
-    } else if (!store.loading && store.user.user_role !== "owner") {
+    } else if (!store.loading && /vendor|uploader/.test(store.user.user_role)) {
       if (!vendorRoute.test(router.pathname)) {
         router.push("/admin/product");
       } else setLoading(false);
-    } else if (!store.loading && store.user.user_role !== "customer") {
+    } else if (!store.loading && store.user.user_role === "owner") {
       setLoading(false);
     }
   }, [store.loading, store.user, router.pathname]);

@@ -9,7 +9,7 @@ const ProtectLoginPage = ({ children }) => {
 
   useEffect(() => {
     if (!store.loading && store.user) {
-      router.push("/");
+      router.push(store?.redirect);
     } else if (!store.loading && !store.user) {
       setLoading(false);
     }

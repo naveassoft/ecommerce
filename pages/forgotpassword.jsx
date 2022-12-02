@@ -41,7 +41,7 @@ const Forgotpassword = () => {
       if (res.ok) {
         alert(result.message);
         localStorage.setItem("token", result.token);
-        router.push("/");
+        router.push(store?.redirect);
       } else throw result;
     } catch (error) {
       alert(error.message);

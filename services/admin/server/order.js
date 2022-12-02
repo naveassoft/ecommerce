@@ -5,7 +5,6 @@ import { errorHandler, getDataFromDB, varifyOwner } from "./common";
 export async function getOder(req, res) {
   try {
     await varifyOwner(req.query.user_id);
-
     if (req.query.id) {
       //send single order;
       const sql = `SELECT * FROM orders WHERE id=${req.query.id}`;
@@ -19,7 +18,7 @@ export async function getOder(req, res) {
       const limit = req.query.limit || 10;
       const page = parseInt(req.query.page || 0) * limit;
       const sql = `SELECT * FROM orders WHERE created_at >= '${req.query.start}' AND created_at <= '${req.query.end}' AND status = '${req.query.status}' LIMIT ${page}, ${limit}`;
-      const count = `SELECT COUNT(id) FROM orders WHERE created_at BETWEEN '${req.query.start}' AND '${req.query.end}'`;
+      const count = `SELECT COUNT(id) FROM orders WHERE created_at >= '${req.query.start}' AND created_at <= '${req.query.end}' AND status = '${req.query.status}'`;
       getDataFromDB(res, sql, count);
     }
     // send orders based on status;

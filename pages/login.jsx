@@ -7,7 +7,7 @@ const SocialLogin = dynamic(
   { ssr: false }
 );
 
-const login = () => {
+const Login = () => {
   const [loading, setLoading] = useState(false);
   const [login, setLogin] = useState(true);
   const [error, setError] = useState("");
@@ -185,4 +185,4 @@ const login = () => {
   );
 };
 
-export default login;
+export default Login;
