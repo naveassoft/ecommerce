@@ -1,10 +1,10 @@
 import Joi from "joi";
+import { postDocument, queryDocument } from "../mysql";
 import {
   bodyParser,
   deleteImage,
   errorHandler,
-  getDateFromDB,
-  mySql,
+  getDataFromDB,
   varifyOwner,
 } from "./common";
 
@@ -13,17 +13,17 @@ export function getBrand(req, res) {
     if (req.query.id) {
       //send single category;
       const sql = `SELECT * FROM brand WHERE id=${req.query.id}`;
-      getDateFromDB(res, sql);
+      getDataFromDB(res, sql);
     } else if (req.query.home) {
       // send category for home category page;
       const page = parseInt(req.query.page || 0) * req.query.limit;
       const sql = `SELECT * FROM brand LIMIT ${page}, ${req.query.limit}`;
       const count = "SELECT COUNT(id) FROM brand";
-      getDateFromDB(res, sql, count);
+      getDataFromDB(res, sql, count);
     } else {
       //send all category
       const sql = "SELECT * FROM brand";
-      getDateFromDB(res, sql);
+      getDataFromDB(res, sql);
     }
   } catch (error) {
     errorHandler(res, error);
@@ -43,41 +43,21 @@ export async function postBrand(req, res) {
 
     const { error } = await bodyParser(req, res, "assets", img);
     if (error || !req.files.image) {
-      return errorHandler(res, {
-        message: "Error occured when image updlading",
-      });
+      throw { message: "Error occured when image updlading" };
     }
+    await varifyOwner(req.body.user_id);
+
     req.body.image = req.files.image[0].filename;
-    if (!req.body.user_id) {
-      deleteImage(req.body.image);
-      return errorHandler(res, { message: "Forbiden", status: 403 });
-    }
+    delete req.body.user_id;
+    //api validateion;
+    const varify = brandSchema.validate(req.body);
+    if (varify.error) throw { message: varify.error.message };
 
-    function post() {
-      delete req.body.user_id;
-      //api validateion;
-      const varify = brandSchema.validate(req.body);
-      if (varify.error) {
-        deleteImage(req.body.image);
-        errorHandler(res, { message: varify.error.message });
-        return;
-      }
-
-      const sql = "INSERT INTO brand SET ?";
-      mySql.query(sql, req.body, (err, result) => {
-        if (err) {
-          deleteImage(req.body.image);
-          return errorHandler(res, { message: err.sqlMessage });
-        } else {
-          if (result.insertId > 0) {
-            res.send({ message: "Brand Added Successfully" });
-          } else {
-            res.send({ message: "Unable to Added, please try again" });
-          }
-        }
-      });
-    }
-    varifyOwner(res, req.body.user_id, post, req.body.image);
+    const sql = "INSERT INTO brand SET ";
+    const result = await postDocument(sql, req.body);
+    if (result.insertId > 0) {
+      res.send({ message: "Brand Added Successfully" });
+    } else throw { message: "Unable to Added" };
   } catch (error) {
     deleteImage(req.body.image);
     errorHandler(res, error);
@@ -88,21 +68,15 @@ export async function deleteBrand(req, res) {
   try {
     const { error } = await bodyParser(req, res, "", []);
     if (error) {
-      return errorHandler(res, {
-        message: "Error occured when parsing body",
-      });
+      throw { message: "Error occured when parsing body" };
     }
-    if (!req.body.user_id) {
-      return errorHandler(res, { message: "Forbiden", status: 403 });
-    }
-    varifyOwner(res, req.body.user_id, () => {
-      const sql = `DELETE FROM brand WHERE id=${req.body.id}`;
-      mySql.query(sql, (err) => {
-        if (err) return errorHandler(res, { message: err.sqlMessage });
-        deleteImage(req.body.image);
-        res.send({ message: "Deleted successfully" });
-      });
-    });
+    await varifyOwner(req.body.user_id);
+    const sql = `DELETE FROM brand WHERE id=${req.body.id}`;
+    const result = await queryDocument(sql);
+    if (result.affectedRows > 0) {
+      deleteImage(req.body.image);
+      res.send({ message: "Deleted successfully" });
+    } else throw { message: "unable to delete" };
   } catch (error) {
     errorHandler(res, error);
   }
@@ -113,48 +87,27 @@ export async function updatetCategory(req, res) {
     const img = [{ name: "image", maxCount: 1 }];
     const { error } = await bodyParser(req, res, "assets", img);
     if (error) {
-      return errorHandler(res, {
-        message: "Error occured when image updlading",
-      });
+      throw { message: "Error occured when image updlading" };
     }
-
-    if (!req.body.user_id) {
-      return errorHandler(res, { message: "Forbiden", status: 403 });
+    await varifyOwner(req.body.user_id);
+    delete req.body.user_id;
+    let exist;
+    if (req.files.image) {
+      req.body.image = req.files.image[0].filename;
+      exist = req.body.existimage;
+      delete req.body.existimage;
     }
-
-    varifyOwner(res, req.body.user_id, () => {
-      delete req.body.user_id;
-      let exist;
-      if (req.files.image) {
-        req.body.image = req.files.image[0].filename;
-        exist = req.body.existimage;
-        delete req.body.existimage;
+    const sql = `UPDATE brand SET `;
+    const option = `WHERE id=${req.query.id}`;
+    const result = await postDocument(sql, req.body, option);
+    if (result.changedRows > 0) {
+      if (exist) {
+        deleteImage(exist);
       }
-      let data = "";
-      Object.entries(req.body).forEach(([key, value]) => {
-        if (value) {
-          if (data) {
-            data += `, ${key} = '${value}'`;
-          } else data += `${key} = '${value}'`;
-        }
-      });
-
-      const sql = `UPDATE brand SET ${data} WHERE id=${req.query.id}`;
-      mySql.query(sql, (err, result) => {
-        if (err) errorHandler(res, { message: err.sqlMessage });
-        else {
-          if (result.changedRows > 0) {
-            if (exist) {
-              deleteImage(exist);
-            }
-            res.send({ message: "Brand Updated Successfully" });
-          } else {
-            res.send({ message: "Unable to Update, please try again" });
-          }
-        }
-      });
-    });
+      res.send({ message: "Brand Updated Successfully" });
+    } else throw { message: "Unable to Update" };
   } catch (error) {
+    if (req.body.image) deleteImage(req.body.image);
     errorHandler(res, error);
   }
 }

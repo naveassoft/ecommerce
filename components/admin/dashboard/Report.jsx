@@ -42,9 +42,11 @@ const Report = () => {
           </div>
           <div>
             <h3>TOTAL SALES</h3>
-            <p className="text-2xl font-semibold">
-              <Amount page="dashboard" value={report?.total_sale} />
-            </p>
+            <Amount
+              className="text-2xl font-semibold"
+              page="dashboard"
+              value={report?.total_sale}
+            />
             <p>See all sales</p>
           </div>
         </div>

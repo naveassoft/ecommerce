@@ -1,12 +1,13 @@
 import Joi from "joi";
-import { errorHandler, getDateFromDB, mySql, varifyUser } from "./common";
+import { postDocument, queryDocument } from "../mysql";
+import { errorHandler, getDataFromDB, varifyUser } from "./common";
 
 export function getBlog(req, res) {
   try {
     if (req.query.id) {
       //send single category;
       const sql = `SELECT * FROM blog WHERE id=${req.query.id}`;
-      getDateFromDB(res, sql);
+      getDataFromDB(res, sql);
     } else {
       // send category for home category page;
       const limit = req.query.limit || 10;
@@ -20,7 +21,7 @@ export function getBlog(req, res) {
         sql = `SELECT * FROM blog LIMIT ${page}, ${limit}`;
         count = "SELECT COUNT(id) FROM blog";
       }
-      getDateFromDB(res, sql, count);
+      getDataFromDB(res, sql, count);
     }
   } catch (error) {
     errorHandler(res, error);
@@ -43,47 +44,29 @@ const FaqSchema = Joi.object({
 
 export async function postBlog(req, res) {
   try {
-    if (!req.body.user_id) {
-      return errorHandler(res, { message: "Forbiden", status: 403 });
-    }
-
-    varifyUser(res, req.body.user_id, req.body.user_type, () => {
-      req.body.created_at = new Date();
-      //api validateion;
-      const varify = FaqSchema.validate(req.body);
-      if (varify.error) {
-        errorHandler(res, { message: varify.error.message });
-        return;
-      }
-      const sql = "INSERT INTO blog SET ?";
-      mySql.query(sql, req.body, (err, result) => {
-        if (err) return errorHandler(res, { message: err.sqlMessage });
-        else {
-          if (result.insertId > 0) {
-            res.send({ message: "Blog Added Successfully" });
-          } else {
-            res.send({ message: "Unable to Added, please try again" });
-          }
-        }
-      });
-    });
+    await varifyUser(req.body.user_id, req.body.user_type);
+    req.body.created_at = new Date();
+    //api validateion;
+    const varify = FaqSchema.validate(req.body);
+    if (varify.error) throw { message: varify.error.message };
+    const sql = "INSERT INTO blog SET ";
+    const result = await postDocument(sql, req.body);
+    if (result.insertId > 0) {
+      res.send({ message: "Blog Added Successfully" });
+    } else throw { message: "Unable to Added" };
   } catch (error) {
     errorHandler(res, error);
   }
 }
 
-export function deleteBlog(req, res) {
+export async function deleteBlog(req, res) {
   try {
-    if (!req.body.user_id && !req.body.user_type) {
-      return errorHandler(res, { message: "Forbiden", status: 403 });
-    }
-    varifyUser(res, req.body.user_id, req.body.user_type, () => {
-      const sql = `DELETE FROM blog WHERE id=${req.body.id}`;
-      mySql.query(sql, (err) => {
-        if (err) return errorHandler(res, { message: err.sqlMessage });
-        res.send({ message: "Deleted successfully" });
-      });
-    });
+    await varifyUser(req.body.user_id, req.body.user_type);
+    const sql = `DELETE FROM blog WHERE id=${req.body.id}`;
+    const result = await queryDocument(sql);
+    if (result.affectedRows > 0) {
+      res.send({ message: "Deleted successfully" });
+    } else throw { message: "unable to delete" };
   } catch (error) {
     errorHandler(res, error);
   }
@@ -91,31 +74,13 @@ export function deleteBlog(req, res) {
 
 export async function updateBlog(req, res) {
   try {
-    if (!req.body.user_id && !req.body.user_type) {
-      return errorHandler(res, { message: "Forbiden", status: 403 });
-    }
-
-    varifyUser(res, req.body.user_id, req.body.user_type, () => {
-      let data = "";
-      Object.entries(req.body).forEach(([key, value]) => {
-        if (!value) return;
-        if (data) {
-          data += `, ${key} = '${value}'`;
-        } else data += `${key} = '${value}'`;
-      });
-
-      const sql = `UPDATE blog SET ${data} WHERE id=${req.query.id}`;
-      mySql.query(sql, (err, result) => {
-        if (err) return errorHandler(res, { message: err.sqlMessage });
-        else {
-          if (result.changedRows > 0) {
-            res.send({ message: "Blog Updated Successfully" });
-          } else {
-            res.send({ message: "Unable to Update, please try again" });
-          }
-        }
-      });
-    });
+    await varifyUser(req.body.user_id, req.body.user_type);
+    const sql = `UPDATE blog SET `;
+    const option = `WHERE id=${req.query.id}`;
+    const result = await postDocument(sql, req.body, option);
+    if (result.changedRows > 0) {
+      res.send({ message: "Blog Updated Successfully" });
+    } else throw { message: "Unable to Update" };
   } catch (error) {
     errorHandler(res, error);
   }

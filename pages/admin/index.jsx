@@ -37,7 +37,7 @@ const Dashboard = () => {
               data?.topProduct.map((item) => (
                 <div key={item.id}>
                   <img
-                    className="h-12 rounded-full"
+                    className="h-10 rounded-full"
                     src={`/assets/${item.main_image}`}
                     alt=""
                   />
@@ -51,7 +51,7 @@ const Dashboard = () => {
               data?.topCustomer.map((item) => (
                 <div key={item.id}>
                   <img
-                    className="h-12 rounded-full"
+                    className="h-10 rounded-full"
                     src={item.profile ? `/assets/${item.profile}` : "/user.png"}
                     alt=""
                   />
@@ -65,7 +65,7 @@ const Dashboard = () => {
               data?.topSaler.map((item) => (
                 <div key={item.id}>
                   <img
-                    className="h-12 rounded-full"
+                    className="h-10 rounded-full"
                     src={
                       item.shop_logo
                         ? `/assets/${item.shop_logo}`
@@ -83,11 +83,11 @@ const Dashboard = () => {
               data?.topRatedProduct.map((item) => (
                 <div key={item.id}>
                   <img
-                    className="h-12 rounded-full"
+                    className="h-10 rounded-full"
                     src={`/assets/${item.main_image}`}
                     alt=""
                   />
-                  <h3>{item.name.slice(0, 30)}</h3>
+                  <h3>{item.name.slice(0, 20)}</h3>
                 </div>
               ))}
           </div>

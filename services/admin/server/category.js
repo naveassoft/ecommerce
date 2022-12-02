@@ -1,10 +1,10 @@
 import Joi from "joi";
+import { postDocument, queryDocument } from "../mysql";
 import {
   bodyParser,
   deleteImage,
   errorHandler,
-  getDateFromDB,
-  mySql,
+  getDataFromDB,
   varifyOwner,
 } from "./common";
 
@@ -13,17 +13,17 @@ export function getCategory(req, res) {
     if (req.query.id) {
       //send single category;
       const sql = `SELECT * FROM category WHERE id=${req.query.id}`;
-      getDateFromDB(res, sql);
+      getDataFromDB(res, sql);
     } else if (req.query.home) {
       // send category for home category page;
       const page = parseInt(req.query.page || 0) * req.query.limit;
       const sql = `SELECT * FROM category ORDER BY priority LIMIT ${page}, ${req.query.limit}`;
       const count = "SELECT COUNT(id) FROM category";
-      getDateFromDB(res, sql, count);
+      getDataFromDB(res, sql, count);
     } else {
       //send all category
       const sql = "SELECT * FROM category ORDER BY priority";
-      getDateFromDB(res, sql);
+      getDataFromDB(res, sql);
     }
   } catch (error) {
     errorHandler(res, error);
@@ -46,45 +46,23 @@ export async function postCategory(req, res) {
       throw { message: "Error occured when image updlading" };
     }
     req.body.image = req.files.image[0].filename;
-    if (!req.body.user_id) {
-      deleteImage(req.body.image);
-      return errorHandler(res, { message: "Forbiden", status: 403 });
-    }
-    function addC() {
-      req.body.priority = parseInt(req.body.priority);
-      delete req.body.user_id;
+    await varifyOwner(req.body.user_id);
+    req.body.priority = parseInt(req.body.priority);
+    delete req.body.user_id;
 
-      //api validateion;
-      const varify = CategorySchema.validate(req.body);
-      if (varify.error) {
-        deleteImage(req.body.image);
-        errorHandler(res, { message: varify.error.message });
-        return;
-      }
+    //api validateion;
+    const varify = CategorySchema.validate(req.body);
+    if (varify.error) throw { message: varify.error.message };
 
-      const query = `SELECT id FROM category WHERE name = '${req.body.name}'`;
-      mySql.query(query, (err, result) => {
-        if (err || result.length) {
-          deleteImage(req.body.image);
-          errorHandler(res, { message: err?.sqlMessage || "Already added" });
-          return;
-        }
-        const sql = "INSERT INTO category SET ?";
-        mySql.query(sql, req.body, (err, result) => {
-          if (err) {
-            deleteImage(req.body.image);
-            return errorHandler(res, { message: err.sqlMessage });
-          } else {
-            if (result.insertId > 0) {
-              res.send({ message: "Category Added Successfully" });
-            } else {
-              res.send({ message: "Unable to Added, please try again" });
-            }
-          }
-        });
-      });
-    }
-    varifyOwner(res, req.body.user_id, addC, req.body.image);
+    const query = `SELECT id FROM category WHERE name = '${req.body.name}'`;
+    const isExist = await queryDocument(query);
+    if (isExist.length) throw { message: "Already added" };
+
+    const sql = "INSERT INTO category SET ";
+    const result = await postDocument(sql, req.body);
+    if (result.insertId > 0) {
+      res.send({ message: "Category Added Successfully" });
+    } else throw { message: "Unable to Added" };
   } catch (error) {
     deleteImage(req.body.image);
     errorHandler(res, error);
@@ -92,63 +70,50 @@ export async function postCategory(req, res) {
 }
 
 export async function deleteCategory(req, res) {
-  const { error } = await bodyParser(req, res, "", []);
-  if (error) {
-    return errorHandler(res, { message: "Error occured when parsing body" });
-  }
-  if (!req.body.user_id) {
-    return errorHandler(res, { message: "Forbiden", status: 403 });
-  }
-  //delete category;
-  function deleteC() {
+  try {
+    const { error } = await bodyParser(req, res, "", []);
+    if (error) {
+      throw { message: "Error occured when parsing body" };
+    }
+    //delete category;
     const categoryQuery = `DELETE FROM category WHERE id=${req.body.id}`;
-    mySql.query(categoryQuery, (err) => {
-      if (err) return errorHandler(res, { message: err.sqlMessage });
+    const category = await queryDocument(categoryQuery);
+    if (category.affectedRows > 0) {
       deleteImage(req.body.image);
+      res.send({ message: "Deleted successfully" });
+    } else throw { message: "unable to delete" };
 
-      //find sub category under this categroy;
-      const subgettingq = `SELECT id, image FROM sub_category WHERE category_id=${req.body.id}`;
-      mySql.query(subgettingq, (err, result) => {
-        if (err) {
-          return errorHandler(res, {
-            message: "Cannot delete sub category",
-          });
-        }
-        const subId = [],
-          imges = [];
-        if (result.length) {
-          result.forEach((item) => {
-            subId.push(item.id);
-            imges.push(item.image);
-          });
-        }
-        if (subId.length) {
-          //delete sub category under this category;
-          const subyQuery = `DELETE FROM sub_category WHERE category_id=${req.body.id}`;
-          mySql.query(subyQuery, (err) => {
-            if (err) {
-              return errorHandler(res, {
-                message: "Cannot delete sub category",
-              });
-            }
-            imges.forEach((img) => deleteImage(img));
-            // delete pro sub category under those sub category;
-            const prosub = `DELETE FROM pro_sub_category WHERE sub_category_id IN(${subId.join(
-              ","
-            )})`;
-            mySql.query(prosub, (err, result) => {
-              if (err)
-                return errorHandler(res, {
-                  message: "Cannot delete pro sub category",
-                });
-              res.send({ message: "Deleted successfully" });
-            }); //till;
-          });
-        } else res.send({ message: "Deleted successfully" });
+    //find sub category under this categroy;
+    const subgettingq = `SELECT id, image FROM sub_category WHERE category_id=${req.body.id}`;
+    const subCategory = await queryDocument(subgettingq);
+    const subId = [],
+      imges = [];
+    if (subCategory.length) {
+      subCategory.forEach((item) => {
+        subId.push(item.id);
+        imges.push(item.image);
       });
-    });
+    }
+    if (subId.length) {
+      //delete sub category under this category;
+      const subyQuery = `DELETE FROM sub_category WHERE category_id=${req.body.id}`;
+      const subcategory = await queryDocument(subyQuery);
+      if (subcategory.affectedRows > 0) {
+        imges.forEach((img) => deleteImage(img));
+      } else throw { message: "unable to delete sub category" };
+
+      // delete pro sub category under those sub category;
+      const prosubsql = `DELETE FROM pro_sub_category WHERE sub_category_id IN(${subId.join(
+        ","
+      )})`;
+      const prosub = await queryDocument(prosubsql);
+      if (prosub.affectedRows > 0) {
+        res.send({ message: "Deleted successfully" });
+      } else throw { message: "unable to delete pro sub category" };
+    }
+  } catch (error) {
+    errorHandler(res, error);
   }
-  varifyOwner(res, req.body.user_id, deleteC);
 }
 
 export async function updatetCategory(req, res) {
@@ -156,42 +121,23 @@ export async function updatetCategory(req, res) {
     const img = [{ name: "image", maxCount: 1 }];
     const { error } = await bodyParser(req, res, "assets", img);
     if (error) throw { message: "Error occured when image updlading" };
-    if (!req.body.user_id) {
-      return errorHandler(res, { message: "Forbiden", status: 403 });
+    await varifyOwner(req.body.user_id);
+    delete req.body.user_id;
+    let exist;
+    if (req.files.image) {
+      req.body.image = req.files.image[0].filename;
+      exist = req.body.existimage;
+      delete req.body.existimage;
     }
-    function update() {
-      delete req.body.user_id;
-      let exist;
-      if (req.files.image) {
-        req.body.image = req.files.image[0].filename;
-        exist = req.body.existimage;
-        delete req.body.existimage;
+    const sql = `UPDATE category SET `;
+    const option = `WHERE id=${req.query.id}`;
+    const result = await postDocument(sql, req.body, option);
+    if (result.changedRows > 0) {
+      if (exist) {
+        deleteImage(exist);
       }
-      let data = "";
-      Object.entries(req.body).forEach(([key, value]) => {
-        if (value) {
-          if (data) {
-            data += `, ${key} = '${value}'`;
-          } else data += `${key} = '${value}'`;
-        }
-      });
-
-      const sql = `UPDATE category SET ${data} WHERE id=${req.query.id}`;
-      mySql.query(sql, (err, result) => {
-        if (err) return errorHandler(res, { message: err.sqlMessage });
-        else {
-          if (result.changedRows > 0) {
-            if (exist) {
-              deleteImage(exist);
-            }
-            res.send({ message: "Category Updated Successfully" });
-          } else {
-            res.send({ message: "Unable to Update, please try again" });
-          }
-        }
-      });
-    }
-    varifyOwner(res, req.body.user_id, update);
+      res.send({ message: "Category Updated Successfully" });
+    } else throw { message: "Unable to Update" };
   } catch (error) {
     errorHandler(res, error);
   }

@@ -27,7 +27,7 @@ const Header = ({ isOpen }) => {
   function singOut() {
     setShowController(false);
     store.setUser(null);
-    sessionStorage.removeItem("token");
+    localStorage.removeItem("token");
   }
 
   return (

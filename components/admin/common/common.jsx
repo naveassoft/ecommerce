@@ -164,9 +164,9 @@ export function MySqlDate({ date }) {
   return <p>{datetime}</p>;
 }
 
-export function Amount({ value, page }) {
+export function Amount({ value, page, className = "" }) {
   return (
-    <p>
+    <p className={className}>
       <span className={`${page ? "text-4xl" : "text-3xl"}`}>৳</span>
       <span className={`${page ? "text-2xl" : "text-lg"}`}>{value}</span>
     </p>

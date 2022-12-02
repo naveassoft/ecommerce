@@ -1,6 +1,5 @@
 import useStore from "../components/context/useStore";
-import React, { useEffect, useRef, useState } from "react";
-import { GoogleLogin } from "react-google-login";
+import React, { useRef, useState } from "react";
 import { useRouter } from "next/router";
 import dynamic from "next/dynamic";
 const SocialLogin = dynamic(
@@ -36,8 +35,8 @@ const login = () => {
       const result = await res.json();
       if (res.ok) {
         store.setUser(result.user);
-        sessionStorage.setItem("token", result.token);
-        router.push(store?.redirect || "/");
+        localStorage.setItem("token", result.token);
+        router.push(store?.redirect);
       } else throw result;
     } catch (error) {
       setError(error.message);

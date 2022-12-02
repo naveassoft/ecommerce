@@ -1,16 +1,8 @@
-import mysql from "mysql";
 import multer from "multer";
 import path from "path";
 import fs from "fs";
 import nodemailer from "nodemailer";
-
-export const mySql = mysql.createPool({
-  host: "localhost",
-  user: "root",
-  database: "ecommerce",
-  password: "",
-  connectionLimit: 10,
-});
+import { queryDocument } from "../mysql";
 
 export const mailer = nodemailer.createTransport({
   service: "gmail",
@@ -20,52 +12,50 @@ export const mailer = nodemailer.createTransport({
   },
 });
 
-export function varifyOwner(res, user_id, callback, img) {
-  const sql = `SELECT id, user_role FROM user WHERE id = '${user_id}'`;
-  mySql.query(sql, (err, result) => {
-    if (err) {
-      if (img) deleteImage(img);
-      return errorHandler(res, { message: err.sqlMessage });
-    }
+export async function varifyOwner(user_id) {
+  try {
+    if (!user_id) throw { message: "Forbiden", status: 403 };
+
+    const sql = `SELECT id, user_role FROM user WHERE id = '${user_id}'`;
+    const result = await queryDocument(sql);
     if (!result.length || result[0].user_role !== "owner") {
-      if (img) deleteImage(img);
-      return errorHandler(res, { message: "Forbidden" });
+      throw { message: "Forbidden", status: 409 };
     }
-    callback();
-  });
-}
-
-export function varifyUser(res, user_id, user_type, callback) {
-  let sql = "";
-  if (user_type === "vendor") {
-    sql = `SELECT id, user_role FROM vandor WHERE id = '${user_id}'`;
-  } else {
-    sql = `SELECT id, user_role FROM user WHERE id = '${user_id}'`;
+  } catch (error) {
+    throw error;
   }
-  mySql.query(sql, (err, result) => {
-    if (err) return errorHandler(res, { message: err.sqlMessage });
-    if (!result.length || !/owner|uploader|vendor/.test(result[0].user_role)) {
-      return errorHandler(res, { message: "Forbidden" });
-    }
-    callback();
-  });
 }
 
-export function getDateFromDB(res, query, count = undefined) {
-  return mySql.query(query, (err, data) => {
-    if (err) return errorHandler(res, { message: err.sqlMessage });
-    if (count) {
-      mySql.query(count, (err, totalDocument) => {
-        if (err) {
-          errorHandler(res, { message: err.sqlMessage });
-        } else {
-          res.send({ count: totalDocument[0]["COUNT(id)"], data });
-        }
-      });
-    } else {
-      res.send(data);
+export async function varifyUser(user_id, user_type) {
+  try {
+    if (!user_id && !user_type) {
+      throw { message: "Forbiden", status: 403 };
     }
-  });
+    let sql = "";
+    if (user_type === "vendor") {
+      sql = `SELECT id, user_role FROM vandor WHERE id = '${user_id}'`;
+    } else {
+      sql = `SELECT id, user_role FROM user WHERE id = '${user_id}'`;
+    }
+    const result = await queryDocument(sql);
+    if (!result.length || !/owner|uploader|vendor/.test(result[0].user_role)) {
+      throw { message: "Forbidden", status: 409 };
+    }
+  } catch (error) {
+    throw error;
+  }
+}
+
+export async function getDataFromDB(res, query, count = undefined) {
+  try {
+    const data = await queryDocument(query);
+    if (count) {
+      const totalDocument = await queryDocument(count);
+      res.send({ count: totalDocument[0]["COUNT(id)"], data });
+    } else res.send(data);
+  } catch (error) {
+    errorHandler(res, { message: error.message });
+  }
 }
 
 export async function bodyParser(req, res, folder, images) {

@@ -1,22 +1,23 @@
 import Joi from "joi";
-import { errorHandler, getDateFromDB, mySql, varifyOwner } from "./common";
+import { postDocument, queryDocument } from "../mysql";
+import { errorHandler, getDataFromDB, varifyOwner } from "./common";
 
 export function getProSub(req, res) {
   try {
     if (req.query.id) {
       //send single category;
       const sql = `SELECT * FROM pro_sub_category WHERE id=${req.query.id}`;
-      getDateFromDB(res, sql);
+      getDataFromDB(res, sql);
     } else if (req.query.home) {
       // send category for home category page;
       const page = parseInt(req.query.page || 0) * req.query.limit;
       const sql = `SELECT * FROM pro_sub_category LIMIT ${page}, ${req.query.limit}`;
       const count = "SELECT COUNT(id) FROM pro_sub_category";
-      getDateFromDB(res, sql, count);
+      getDataFromDB(res, sql, count);
     } else {
       //send all category
       const sql = "SELECT * FROM pro_sub_category";
-      getDateFromDB(res, sql);
+      getDataFromDB(res, sql);
     }
   } catch (error) {
     errorHandler(res, error);
@@ -32,55 +33,35 @@ const prosubSchema = Joi.object({
 export async function postProSub(req, res) {
   try {
     if (!req.body.user_id) {
-      return errorHandler(res, { message: "Forbiden", status: 403 });
+      throw { message: "Forbiden", status: 403 };
     }
+    delete req.body.user_id;
+    //api validateion;
+    const varify = prosubSchema.validate(req.body);
+    if (varify.error) throw { message: varify.error.message };
 
-    function post() {
-      delete req.body.user_id;
-      //api validateion;
-      const varify = prosubSchema.validate(req.body);
-      if (varify.error) {
-        errorHandler(res, { message: varify.error.message });
-        return;
-      }
-      const query = `SELECT id FROM pro_sub_category WHERE name = '${req.body.name}' AND sub_category_id = '${req.body.sub_category_id}'`;
-      mySql.query(query, (err, result) => {
-        if (err) return errorHandler(res, { message: err.sqlMessage });
-        if (result.length) {
-          return errorHandler(res, { message: "Already added", status: 409 });
-        }
-        const sql = "INSERT INTO pro_sub_category SET ?";
-        mySql.query(sql, req.body, (err, result) => {
-          if (err) return errorHandler(res, { message: err.sqlMessage });
-          else {
-            if (result.insertId > 0) {
-              res.send({ message: "Pro Sub Category Added Successfully" });
-            } else {
-              res.send({ message: "Unable to Added, please try again" });
-            }
-          }
-        });
-      });
-    }
-    varifyOwner(res, req.body.user_id, post);
+    const query = `SELECT id FROM pro_sub_category WHERE name = '${req.body.name}' AND sub_category_id = '${req.body.sub_category_id}'`;
+    const isExist = await queryDocument(query);
+    if (isExist.length) throw { message: "Already added", status: 409 };
+
+    const sql = "INSERT INTO pro_sub_category SET ";
+    const result = await postDocument(sql, req.body);
+    if (result.insertId > 0) {
+      res.send({ message: "Pro Sub Category Added Successfully" });
+    } else throw { message: "Unable to Added" };
   } catch (error) {
     errorHandler(res, error);
   }
 }
 
-export function deleteProsub(req, res) {
+export async function deleteProsub(req, res) {
   try {
-    if (!req.body.user_id) {
-      return errorHandler(res, { message: "Forbiden", status: 403 });
-    }
-
-    varifyOwner(res, req.body.user_id, () => {
-      const sql = `DELETE FROM pro_sub_category WHERE id=${req.body.id}`;
-      mySql.query(sql, (err) => {
-        if (err) return errorHandler(res, { message: err.sqlMessage });
-        res.send({ message: "Deleted successfully" });
-      });
-    });
+    await varifyOwner(req.body.user_id);
+    const sql = `DELETE FROM pro_sub_category WHERE id=${req.body.id}`;
+    const result = await queryDocument(sql);
+    if (result.affectedRows > 0) {
+      res.send({ message: "Deleted successfully" });
+    } else throw { message: "unable to delete" };
   } catch (error) {
     errorHandler(res, error);
   }
@@ -88,32 +69,14 @@ export function deleteProsub(req, res) {
 
 export async function updatetProsub(req, res) {
   try {
-    if (!req.body.user_id) {
-      return errorHandler(res, { message: "Forbiden", status: 403 });
-    }
-
-    function edit() {
-      delete req.body.user_id;
-      let data = "";
-      Object.entries(req.body).forEach(([key, value]) => {
-        if (data) {
-          data += `, ${key} = '${value}'`;
-        } else data += `${key} = '${value}'`;
-      });
-
-      const sql = `UPDATE pro_sub_category SET ${data} WHERE id=${req.query.id}`;
-      mySql.query(sql, (err, result) => {
-        if (err) return errorHandler(res, { message: err.sqlMessage });
-        else {
-          if (result.changedRows > 0) {
-            res.send({ message: "Pro Sub Category Updated Successfully" });
-          } else {
-            res.send({ message: "Unable to Update, please try again" });
-          }
-        }
-      });
-    }
-    varifyOwner(res, req.body.user_id, edit);
+    await varifyOwner(req.body.user_id);
+    delete req.body.user_id;
+    const sql = `UPDATE pro_sub_category SET `;
+    const option = `WHERE id=${req.query.id}`;
+    const result = await postDocument(sql, req.body, option);
+    if (result.changedRows > 0) {
+      res.send({ message: "Pro Sub Category Updated Successfully" });
+    } else throw { message: "Unable to Update" };
   } catch (error) {
     errorHandler(res, error);
   }

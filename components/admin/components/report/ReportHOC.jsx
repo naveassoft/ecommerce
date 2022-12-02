@@ -31,7 +31,7 @@ const ReportHOC = (OriginalComponent, title) => {
     //get orders ;
     async function getAllOrder() {
       const { data, error } = await store?.fetchData(
-        `/api/order?status=${title}&limit=${limit}&page=${page}&user=${store.user.id}`
+        `/api/order?status=${title}&limit=${limit}&page=${page}&user_id=${store.user.id}`
       );
       if (data) {
         setOrders(data.data);
@@ -47,7 +47,7 @@ const ReportHOC = (OriginalComponent, title) => {
     //get order by date;
     async function getOrderbyDate(payload) {
       const { data, error } = await store?.fetchData(
-        `/api/order?date=true&status=delivered&start=${payload.start_date}&end=${payload.end_date}&limit=${limit}&page=${page}`
+        `/api/order?date=true&status=delivered&start=${payload.start_date}&end=${payload.end_date}&limit=${limit}&page=${page}&user_id=${store.user.id}`
       );
       if (data) {
         setOrders(data.data);

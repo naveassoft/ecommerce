@@ -57,6 +57,7 @@ const DFAQ = () => {
       if (res.ok) {
         store?.setAlert({ msg: result.message, type: "success" });
         setUpdate((prev) => !prev);
+        setShowAction(-1);
       } else throw result;
     } catch (error) {
       store?.setAlert({ msg: error.message, type: "error" });

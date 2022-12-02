@@ -89,6 +89,7 @@ const EditProduct = () => {
       else setShowSub(null);
     } else setShowSub(null);
   } //till;
+
   //handle pro sub category based on sub category;
   function handleProSub(id) {
     if (id) {
@@ -143,6 +144,12 @@ const EditProduct = () => {
     if (deleteImg.length) img.push(...deleteImg);
     if (img.length) data.deleteImage = JSON.stringify(img);
     //till;
+    //need not delete image;
+    const needImage = [];
+    JSON.parse(product.features_img).forEach((img) => {
+      if (!deleteImg.includes(img)) needImage.push(img);
+    });
+    if (needImage.length) data.needImage = JSON.stringify(needImage);
 
     //set all data into formdata;
     const formData = new FormData();

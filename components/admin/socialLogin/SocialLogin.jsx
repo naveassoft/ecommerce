@@ -18,7 +18,7 @@ const SocialLogin = ({ setError }) => {
       });
     };
     gapi.load("client:auth2", initClient);
-  });
+  }, []);
 
   async function googleLogin(response) {
     try {
@@ -35,10 +35,9 @@ const SocialLogin = ({ setError }) => {
         body: JSON.stringify(data),
       });
       const result = await res.json();
-      console.log(result);
       if (res.ok) {
         store.setUser(result.user);
-        sessionStorage.setItem("token", result.token);
+        localStorage.setItem("token", result.token);
         router.push(store?.redirect || "/");
       } else throw result;
     } catch (error) {

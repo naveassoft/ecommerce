@@ -60,7 +60,7 @@ const DOrder = () => {
   //get orders ;
   async function getAllOrder() {
     const { data, error } = await store?.fetchData(
-      `/api/order?limit=${limit}&page=${page}&user=${store.user.id}`
+      `/api/order?limit=${limit}&page=${page}&user_id=${store.user.id}`
     );
     if (data) {
       setOrders(data.data);
@@ -78,7 +78,7 @@ const DOrder = () => {
     if (filtered !== null) {
       dispatch({ type: "status", value: filtered });
       const { data, error } = await store?.fetchData(
-        `/api/order?status=${filtered}&limit=${limit}&page=${page}&user=${store.user.id}`
+        `/api/order?status=${filtered}&limit=${limit}&page=${page}&user_id=${store.user.id}`
       );
       if (data) {
         setOrders(data.data);
@@ -98,7 +98,7 @@ const DOrder = () => {
   //get order by date;
   async function getOrderbyDate(payload) {
     const { data, error } = await store?.fetchData(
-      `/api/order?date=true&start=${payload.start_date}&end=${payload.end_date}&limit=${limit}&page=${page}&user=${store.user.id}`
+      `/api/order?date=true&start=${payload.start_date}&end=${payload.end_date}&limit=${limit}&page=${page}&user_id=${store.user.id}`
     );
     if (data) {
       setOrders(data.data);
@@ -123,6 +123,7 @@ const DOrder = () => {
       if (!error) {
         store?.setAlert({ msg: message, type: "success" });
         setUpdate((prev) => !prev);
+        setShowAction(-1);
       } else {
         store?.setAlert({ msg: message, type: "error" });
       }

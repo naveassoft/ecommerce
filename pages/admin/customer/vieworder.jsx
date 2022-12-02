@@ -22,7 +22,7 @@ const ViewOrder = () => {
     if (router.query.id) {
       (async function () {
         const { data, error } = await store?.fetchData(
-          `/api/order?id=${router.query.id}&user=${store.user.id}`
+          `/api/order?id=${router.query.id}&user_id=${store.user.id}`
         );
         if (data) {
           const vandor = await store?.fetchData(
@@ -171,33 +171,35 @@ const ViewOrder = () => {
                 <div>
                   <div>
                     <h4>Sub Total</h4>
-                    <p className="text-green-800 font-medium">
-                      <Amount value={order.sub_total} />
-                    </p>
+                    <Amount
+                      className="text-green-800 font-medium"
+                      value={order.sub_total}
+                    />
                   </div>
                   <div>
                     <h4>Discount</h4>
-                    <p className="text-yellow-700">
-                      <Amount value={order.discount} />
-                    </p>
+                    <Amount
+                      className="text-yellow-700"
+                      value={order.discount}
+                    />
                   </div>
                   <div>
                     <h4>Tax</h4>
-                    <p className="text-red-500">
-                      <Amount value={order.tax} />
-                    </p>
+                    <Amount className="text-red-500" value={order.tax} />
                   </div>
                   <div>
                     <h4>Shipping & Handling</h4>
-                    <p className="text-red-500">
-                      <Amount value={order.shipping_charge} />
-                    </p>
+                    <Amount
+                      className="text-red-500"
+                      value={order.shipping_charge}
+                    />
                   </div>
                   <div>
                     <h4>Grand Total</h4>
-                    <p className="text-green-800 font-medium">
-                      <Amount value={order.total} />
-                    </p>
+                    <Amount
+                      className="text-green-800 font-medium"
+                      value={order.total}
+                    />
                   </div>
                 </div>
               </div>

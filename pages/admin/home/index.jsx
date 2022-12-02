@@ -61,6 +61,7 @@ const DCategory = () => {
       if (!error) {
         store?.setAlert({ msg: message, type: "success" });
         setUpdate((prev) => !prev);
+        setShowAction(-1);
       } else {
         store?.setAlert({ msg: message, type: "error" });
       }
